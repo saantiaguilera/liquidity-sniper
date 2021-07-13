@@ -1,0 +1,7 @@
+__pycache__
+
+build/
+
+.idea/
+
+local.properties

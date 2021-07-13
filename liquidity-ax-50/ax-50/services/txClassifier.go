@@ -2,9 +2,10 @@ package services
 
 import (
 	"context"
-	"dark_forester/global"
 	"fmt"
 	"math/big"
+
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/global"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"

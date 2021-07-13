@@ -1,10 +1,11 @@
 package services
 
 import (
-	"dark_forester/contracts/uniswap"
-	"dark_forester/global"
 	"math/big"
 	"sync"
+
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/contracts/uniswap"
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/global"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"

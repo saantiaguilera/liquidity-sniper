@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"crypto/ecdsa"
-	"dark_forester/global"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -13,6 +12,8 @@ import (
 	"math/rand"
 	"sync"
 	"time"
+
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/global"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"

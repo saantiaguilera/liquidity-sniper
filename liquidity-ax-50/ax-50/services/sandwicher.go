@@ -2,11 +2,12 @@ package services
 
 import (
 	"context"
-	"dark_forester/global"
 	"fmt"
 	"log"
 	"math/big"
 	"time"
+
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/global"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -23,9 +24,9 @@ func sandwiching(tx *types.Transaction, client *ethclient.Client) {
 
 	////////// SEND FRONTRUNNING TX ///////////////////
 
-	nonce, err := client.PendingNonceAt(context.Background(), global.DARK_FORESTER_ACCOUNT.Address)
+	nonce, err := client.PendingNonceAt(context.Background(), global.AX_50_ACCOUNT.Address)
 	if err != nil {
-		fmt.Printf("couldn't fetch pending nonce for DARK_FORESTER_ACCOUNT", err)
+		fmt.Printf("couldn't fetch pending nonce for AX_50_ACCOUNT_ACCOUNT", err)
 	}
 	signedFrontrunningTx, gasPriceFront := _prepareFrontrun(nonce, tx, client)
 	if signedFrontrunningTx == nil {

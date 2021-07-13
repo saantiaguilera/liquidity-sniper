@@ -2,12 +2,13 @@ package services
 
 import (
 	"context"
-	"dark_forester/global"
 	"fmt"
 	"log"
 	"math/big"
 	"math/rand"
 	"time"
+
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/global"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -21,9 +22,9 @@ func sandwichingOnSteroid(tx *types.Transaction, client *ethclient.Client) {
 	var confirmedInTx = make(chan *SandwichResult, 100)
 
 	////////// SEND FRONTRUNNING TX ///////////////////
-	nonce, err := client.PendingNonceAt(context.Background(), global.DARK_FORESTER_ACCOUNT.Address)
+	nonce, err := client.PendingNonceAt(context.Background(), global.AX_50_ACCOUNT.Address)
 	if err != nil {
-		fmt.Printf("couldn't fetch pending nonce for DARK_FORESTER_ACCOUNT", err)
+		fmt.Printf("couldn't fetch pending nonce for AX_50_ACCOUNT_ACCOUNT", err)
 	}
 	to := global.TRIGGER_ADDRESS
 	gasLimit := uint64(700000)
@@ -55,7 +56,7 @@ func sandwichingOnSteroid(tx *types.Transaction, client *ethclient.Client) {
 	gasPriceFront := big.NewInt(1)
 	gasPriceFront.Mul(victimGasPrice, big.NewInt(1100001)).Div(gasPriceFront, big.NewInt(1000000))
 	frontrunningTx := types.NewTransaction(nonce, to, value, gasLimit, gasPriceFront, dataIn)
-	signedFrontrunningTx, _ := types.SignTx(frontrunningTx, types.NewEIP155Signer(global.CHAINID), global.DARK_FORESTER_ACCOUNT.RawPk)
+	signedFrontrunningTx, _ := types.SignTx(frontrunningTx, types.NewEIP155Signer(global.CHAINID), global.AX_50_ACCOUNT.RawPk)
 	go WaitRoom(client, signedFrontrunningTx.Hash(), confirmedInTx, "frontrun")
 	err = client.SendTransaction(context.Background(), signedFrontrunningTx)
 	if err != nil {
@@ -66,8 +67,8 @@ func sandwichingOnSteroid(tx *types.Transaction, client *ethclient.Client) {
 	// cancel
 	gasPriceFront.Mul(gasPriceFront, big.NewInt(1100001)).Div(gasPriceFront, big.NewInt(1000000))
 	if victimGasPrice.Cmp(global.MAXGWEIFRONTRUN) != 1 {
-		cancelTx := types.NewTransaction(nonce, global.DARK_FORESTER_ACCOUNT.Address, big.NewInt(0), 500000, gasPriceFront, nil)
-		signedCancelTx, _ := types.SignTx(cancelTx, types.NewEIP155Signer(global.CHAINID), global.DARK_FORESTER_ACCOUNT.RawPk)
+		cancelTx := types.NewTransaction(nonce, global.AX_50_ACCOUNT.Address, big.NewInt(0), 500000, gasPriceFront, nil)
+		signedCancelTx, _ := types.SignTx(cancelTx, types.NewEIP155Signer(global.CHAINID), global.AX_50_ACCOUNT.RawPk)
 		go WaitRoom(client, signedCancelTx.Hash(), confirmedInTx, "cancel")
 		err = client.SendTransaction(context.Background(), signedCancelTx)
 		if err != nil {
@@ -82,7 +83,7 @@ func sandwichingOnSteroid(tx *types.Transaction, client *ethclient.Client) {
 		gasPriceFront.Mul(gasPriceFront, big.NewInt(1100001)).Div(gasPriceFront, big.NewInt(1000000))
 		if victimGasPrice.Cmp(global.MAXGWEIFRONTRUN) != 1 {
 			frontrunningTx = types.NewTransaction(nonce, to, value, gasLimit, gasPriceFront, dataIn)
-			signedFrontrunningTx, _ = types.SignTx(frontrunningTx, types.NewEIP155Signer(global.CHAINID), global.DARK_FORESTER_ACCOUNT.RawPk)
+			signedFrontrunningTx, _ = types.SignTx(frontrunningTx, types.NewEIP155Signer(global.CHAINID), global.AX_50_ACCOUNT.RawPk)
 			go WaitRoom(client, signedFrontrunningTx.Hash(), confirmedInTx, "frontrun")
 			err = client.SendTransaction(context.Background(), signedFrontrunningTx)
 			if err != nil {
@@ -96,8 +97,8 @@ func sandwichingOnSteroid(tx *types.Transaction, client *ethclient.Client) {
 
 		gasPriceFront.Mul(gasPriceFront, big.NewInt(1100001)).Div(gasPriceFront, big.NewInt(1000000))
 		if victimGasPrice.Cmp(global.MAXGWEIFRONTRUN) != 1 {
-			cancelTx := types.NewTransaction(nonce, global.DARK_FORESTER_ACCOUNT.Address, big.NewInt(0), 500000, gasPriceFront, nil)
-			signedCancelTx, _ := types.SignTx(cancelTx, types.NewEIP155Signer(global.CHAINID), global.DARK_FORESTER_ACCOUNT.RawPk)
+			cancelTx := types.NewTransaction(nonce, global.AX_50_ACCOUNT.Address, big.NewInt(0), 500000, gasPriceFront, nil)
+			signedCancelTx, _ := types.SignTx(cancelTx, types.NewEIP155Signer(global.CHAINID), global.AX_50_ACCOUNT.RawPk)
 			go WaitRoom(client, signedCancelTx.Hash(), confirmedInTx, "cancel")
 			err = client.SendTransaction(context.Background(), signedCancelTx)
 			if err != nil {
@@ -117,7 +118,7 @@ func sandwichingOnSteroid(tx *types.Transaction, client *ethclient.Client) {
 		gasPriceFront.Mul(gasPriceFront, big.NewInt(1100001)).Div(gasPriceFront, big.NewInt(1000000))
 		if victimGasPrice.Cmp(global.MAXGWEIFRONTRUN) != 1 {
 			frontrunningTx = types.NewTransaction(nonce, to, value, gasLimit, gasPriceFront, dataIn)
-			signedFrontrunningTx, _ = types.SignTx(frontrunningTx, types.NewEIP155Signer(global.CHAINID), global.DARK_FORESTER_ACCOUNT.RawPk)
+			signedFrontrunningTx, _ = types.SignTx(frontrunningTx, types.NewEIP155Signer(global.CHAINID), global.AX_50_ACCOUNT.RawPk)
 			go WaitRoom(client, signedFrontrunningTx.Hash(), confirmedInTx, "frontrun")
 			err = client.SendTransaction(context.Background(), signedFrontrunningTx)
 			if err != nil {
@@ -140,7 +141,7 @@ func sandwichingOnSteroid(tx *types.Transaction, client *ethclient.Client) {
 		gasPriceFront.Mul(gasPriceFront, big.NewInt(1100001)).Div(gasPriceFront, big.NewInt(1000000))
 		if victimGasPrice.Cmp(global.MAXGWEIFRONTRUN) != 1 {
 			frontrunningTx = types.NewTransaction(nonce, to, value, gasLimit, gasPriceFront, dataIn)
-			signedFrontrunningTx, _ = types.SignTx(frontrunningTx, types.NewEIP155Signer(global.CHAINID), global.DARK_FORESTER_ACCOUNT.RawPk)
+			signedFrontrunningTx, _ = types.SignTx(frontrunningTx, types.NewEIP155Signer(global.CHAINID), global.AX_50_ACCOUNT.RawPk)
 			go WaitRoom(client, signedFrontrunningTx.Hash(), confirmedInTx, "frontrun")
 			err = client.SendTransaction(context.Background(), signedFrontrunningTx)
 			if err != nil {

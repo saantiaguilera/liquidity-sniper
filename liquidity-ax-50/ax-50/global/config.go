@@ -3,14 +3,15 @@ package global
 import (
 	"bufio"
 	"crypto/ecdsa"
-	"dark_forester/contracts/erc20"
-	"dark_forester/contracts/uniswap"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"math/big"
 	"os"
+
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/contracts/erc20"
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/contracts/uniswap"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -25,7 +26,7 @@ import (
 
 var accountAddress = "0x81F37cc0EcAE1dD1c89D79A98f857563873cFA76"
 var accountPk = "de8c0753508570d6bc3aea027a5896401c82fe997d3717d19c785Fbbee128695"
-var DARK_FORESTER_ACCOUNT Account
+var AX_50_ACCOUNT Account
 
 ///////// CONST //////////////////
 var WBNB_ADDRESS = common.HexToAddress("0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c")
@@ -159,13 +160,13 @@ type Account struct {
 
 ///////////// INITIIALISER FUNCS /////////////////
 func _initConst(client *ethclient.Client) {
-	DARK_FORESTER_ACCOUNT.Address = common.HexToAddress(accountAddress)
-	DARK_FORESTER_ACCOUNT.Pk = accountPk
+	AX_50_ACCOUNT.Address = common.HexToAddress(accountAddress)
+	AX_50_ACCOUNT.Pk = accountPk
 	rawPk, err := crypto.HexToECDSA(accountPk)
 	if err != nil {
-		log.Printf("error decrypting DARK_FORESTER_ACCOUNT pk: %v", err)
+		log.Printf("error decrypting AX_50_ACCOUNT_ACCOUNT pk: %v", err)
 	}
-	DARK_FORESTER_ACCOUNT.RawPk = rawPk
+	AX_50_ACCOUNT.RawPk = rawPk
 
 	factory, err := uniswap.NewIPancakeFactory(CAKE_FACTORY_ADDRESS, client)
 	if err != nil {
@@ -248,7 +249,7 @@ func _initSandwicher() {
 	if err != nil {
 		log.Fatalln("cannot unmarshall data into SANDWICH_BOOK", err)
 	}
-	for market, _ := range SANDWICH_BOOK {
+	for market := range SANDWICH_BOOK {
 		IN_SANDWICH_BOOK[market] = true
 	}
 	file, _ := os.Create("./global/sandwich_book_to_test.json")

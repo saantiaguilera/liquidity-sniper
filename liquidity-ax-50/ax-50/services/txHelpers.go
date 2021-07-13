@@ -2,9 +2,10 @@ package services
 
 import (
 	"context"
-	"dark_forester/contracts/erc20"
 	"log"
 	"math/big"
+
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/contracts/erc20"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"

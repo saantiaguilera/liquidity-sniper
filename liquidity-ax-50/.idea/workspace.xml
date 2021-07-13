@@ -10,20 +10,32 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2d0bdd69-2d04-4417-b06a-9c6b32ae68a5" name="Default Changelist" comment="" />
+    <list default="true" id="2d0bdd69-2d04-4417-b06a-9c6b32ae68a5" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ax-50/dark_forester.go" beforeDir="false" afterPath="$PROJECT_DIR$/ax-50/dark_forester.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ax-50/global/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/ax-50/global/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ax-50/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/ax-50/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ax-50/go.sum" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ax-50/services/assessProfitability.go" beforeDir="false" afterPath="$PROJECT_DIR$/ax-50/services/assessProfitability.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ax-50/services/clogger.go" beforeDir="false" afterPath="$PROJECT_DIR$/ax-50/services/clogger.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ax-50/services/sandwicher.go" beforeDir="false" afterPath="$PROJECT_DIR$/ax-50/services/sandwicher.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ax-50/services/sandwicherHelper.go" beforeDir="false" afterPath="$PROJECT_DIR$/ax-50/services/sandwicherHelper.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ax-50/services/sandwicherOnSteroid.go" beforeDir="false" afterPath="$PROJECT_DIR$/ax-50/services/sandwicherOnSteroid.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ax-50/services/txClassifier.go" beforeDir="false" afterPath="$PROJECT_DIR$/ax-50/services/txClassifier.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ax-50/services/txHelpers.go" beforeDir="false" afterPath="$PROJECT_DIR$/ax-50/services/txHelpers.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ax-50/services/uniswapClassifier.go" beforeDir="false" afterPath="$PROJECT_DIR$/ax-50/services/uniswapClassifier.go" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="GOROOT" path="/usr/local/Cellar/go/1.15.2/libexec" />
+  <component name="GOROOT" path="$PROJECT_DIR$/../../../../go1.16.6" />
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-  </component>
-  <component name="GoLibraries">
-    <option name="indexEntireGoPath" value="false" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="ProjectId" id="1vHLnrFtgzggXl9KJeWfsRFAVtC" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -31,10 +43,14 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="configurable.Global.GOPATH.is.expanded" value="true" />
+    <property name="configurable.Module.GOPATH.is.expanded" value="false" />
+    <property name="configurable.Project.GOPATH.is.expanded" value="true" />
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
     <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="terminal" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">
@@ -50,12 +66,25 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="401" y="210" width="637" height="502" key="find.popup" timestamp="1626215380107">
+    <state x="551" y="189" key="EnvironmentVariablesDialog" timestamp="1626216939266">
       <screen x="0" y="23" width="1440" height="877" />
     </state>
-    <state x="401" y="210" width="637" height="502" key="find.popup/0.23.1440.877@0.23.1440.877" timestamp="1626215380107" />
+    <state x="551" y="189" key="EnvironmentVariablesDialog/0.23.1440.877@0.23.1440.877" timestamp="1626216939266" />
+    <state x="251" y="100" key="SettingsEditor" timestamp="1626216940048">
+      <screen x="0" y="23" width="1440" height="877" />
+    </state>
+    <state x="251" y="100" key="SettingsEditor/0.23.1440.877@0.23.1440.877" timestamp="1626216940048" />
+    <state x="100" y="123" width="1240" height="677" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1626215931085">
+      <screen x="0" y="23" width="1440" height="877" />
+    </state>
+    <state x="100" y="123" width="1240" height="677" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.23.1440.877@0.23.1440.877" timestamp="1626215931085" />
+    <state x="401" y="210" width="637" height="530" key="find.popup" timestamp="1626218211438">
+      <screen x="0" y="23" width="1440" height="877" />
+    </state>
+    <state x="401" y="210" width="637" height="530" key="find.popup/0.23.1440.877@0.23.1440.877" timestamp="1626218211438" />
     <state x="385" y="213" key="search.everywhere.popup" timestamp="1626214268300">
       <screen x="0" y="23" width="1440" height="877" />
     </state>

@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"crypto/ecdsa"
-	"dark_forester/global"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -14,6 +13,8 @@ import (
 	"reflect"
 	"sync"
 	"time"
+
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/global"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -93,7 +94,7 @@ func _prepareFrontrun(nonce uint64, tx *types.Transaction, client *ethclient.Cli
 	dataIn = append(dataIn, amountOutMinIn...)
 
 	frontrunningTx := types.NewTransaction(nonce, to, value, gasLimit, gasPriceFront, dataIn)
-	signedFrontrunningTx, err := types.SignTx(frontrunningTx, types.NewEIP155Signer(global.CHAINID), global.DARK_FORESTER_ACCOUNT.RawPk)
+	signedFrontrunningTx, err := types.SignTx(frontrunningTx, types.NewEIP155Signer(global.CHAINID), global.AX_50_ACCOUNT.RawPk)
 	if err != nil {
 		fmt.Println("Problem signing the frontrunning tx: ", err)
 	}
@@ -113,7 +114,7 @@ func _prepareBackrun(nonce uint64, gasPrice *big.Int) *types.Transaction {
 	dataOut = append(dataOut, tokenOut...)
 	dataOut = append(dataOut, amountOutMinOut...)
 	backrunningTx := types.NewTransaction(nonce+1, to, value, gasLimit, gasPrice, dataOut)
-	signedBackrunningTx, err := types.SignTx(backrunningTx, types.NewEIP155Signer(global.CHAINID), global.DARK_FORESTER_ACCOUNT.RawPk)
+	signedBackrunningTx, err := types.SignTx(backrunningTx, types.NewEIP155Signer(global.CHAINID), global.AX_50_ACCOUNT.RawPk)
 	if err != nil {
 		fmt.Println("Problem signing the backrunning tx: ", err)
 	}
@@ -151,8 +152,8 @@ func _prepareSellerBackrun(client *ethclient.Client, seller *Seller, sellGasPric
 
 // prepare cancel tx:
 func _prepareCancel(nonce uint64, gasPriceFront *big.Int) *types.Transaction {
-	cancelTx := types.NewTransaction(nonce, global.DARK_FORESTER_ACCOUNT.Address, big.NewInt(0), 500000, gasPriceFront.Mul(gasPriceFront, big.NewInt(2)), nil)
-	signedCancelTx, err2 := types.SignTx(cancelTx, types.NewEIP155Signer(global.CHAINID), global.DARK_FORESTER_ACCOUNT.RawPk)
+	cancelTx := types.NewTransaction(nonce, global.AX_50_ACCOUNT.Address, big.NewInt(0), 500000, gasPriceFront.Mul(gasPriceFront, big.NewInt(2)), nil)
+	signedCancelTx, err2 := types.SignTx(cancelTx, types.NewEIP155Signer(global.CHAINID), global.AX_50_ACCOUNT.RawPk)
 	if err2 != nil {
 		fmt.Println("Problem signing the cancel tx: ", err2)
 	}

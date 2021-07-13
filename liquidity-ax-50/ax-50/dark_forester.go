@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
-	"dark_forester/contracts/erc20"
-	"dark_forester/global"
-	"dark_forester/services"
 	"flag"
 	"fmt"
 	"math/big"
 	"sync"
+
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/contracts/erc20"
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/global"
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/services"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -97,7 +98,7 @@ func StreamNewTxs(client *ethclient.Client, rpcClient *rpc.Client) {
 			}
 		}
 		fmt.Println("\nEnnemies: \n")
-		for ennemy, _ := range global.ENNEMIES {
+		for ennemy := range global.ENNEMIES {
 			fmt.Println(ennemy)
 		}
 
