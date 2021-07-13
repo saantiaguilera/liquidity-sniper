@@ -4,9 +4,6 @@ pragma solidity ^0.8.0;
 import "./Context.sol";
 import "./Ownable.sol";
 
-
-
-
 interface IERC20 {
 
     function totalSupply() external view returns (uint256);
@@ -36,9 +33,6 @@ interface ISandwichRouter {
     ) external returns (uint[] memory amounts);
 }
 
-
-
-
 interface IWBNB {
     function withdraw(uint) external;
     function deposit() external payable;
@@ -59,9 +53,6 @@ interface IPancakeFactory {
     function setFeeTo(address) external;
     function setFeeToSetter(address) external;
 }
-
-
-
 
 contract Trigger2 is Ownable {
 
@@ -96,7 +87,7 @@ contract Trigger2 is Ownable {
 //================== main functions ======================
 
     // Trigger2 is the smart contract in charge or performing liquidity sniping and sandwich attacks. 
-    // For liquidity sniping, its role is to hold the BNB, perform the swap once dark_forester detect the tx in the mempool and if all checks are passed; then route the tokens sniped to the owner. 
+    // For liquidity sniping, its role is to hold the BNB, perform the swap once ax-50 detect the tx in the mempool and if all checks are passed; then route the tokens sniped to the owner.
     // For liquidity sniping, it require a first call to configureSnipe in order to be armed. Then, it can snipe on whatever pair no matter the paired token (BUSD / WBNB etc..).
     // This contract uses a custtom router which is a copy of PCS router but with modified selectors, so that our tx are more difficult to listen than those directly going through PCS router.   
     

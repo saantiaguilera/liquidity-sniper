@@ -17,7 +17,7 @@ import (
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
-// Entry point of dark_forester.
+// Entry point of ax-50.
 // Before Anything, check /global/config to correctly parametrize the bot
 
 var wg = sync.WaitGroup{}

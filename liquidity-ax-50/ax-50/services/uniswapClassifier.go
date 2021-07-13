@@ -120,7 +120,7 @@ func HandleAddLiquidity(tx *types.Transaction, client *ethclient.Client, topSnip
 				if AmountPairedMin.Cmp(global.Snipe.MinLiq) == 1 {
 					if SNIPEBLOCK == false {
 
-						// reminder: the Clogg goroutine launched in dark_forester.go is still blocking and is waiting for the gas price value. Here we unblock it. And all the armed bees are launched, which clogg the mempool and increase the chances of successful sniping.
+						// reminder: the Clogg goroutine launched in ax-50.go is still blocking and is waiting for the gas price value. Here we unblock it. And all the armed bees are launched, which clogg the mempool and increase the chances of successful sniping.
 						topSnipe <- tx.GasPrice()
 
 						// following is just verbose / design thing
@@ -157,7 +157,7 @@ func HandleAddLiquidityETH(tx *types.Transaction, client *ethclient.Client, topS
 			if tx.Value().Cmp(global.Snipe.MinLiq) == 1 {
 				if addLiquidity.AmountETHMin.Cmp(global.Snipe.MinLiq) == 1 {
 					if SNIPEBLOCK == false {
-						// reminder: the Clogg goroutine launched in dark_forester.go is still blocking and is waiting for the gas price value. Here we unblock it. And all the armed bees are launched, which clogg the mempool and increase the chances of successful sniping.
+						// reminder: the Clogg goroutine launched in ax-50.go is still blocking and is waiting for the gas price value. Here we unblock it. And all the armed bees are launched, which clogg the mempool and increase the chances of successful sniping.
 						topSnipe <- tx.GasPrice()
 
 						// following is just verbose / design thing

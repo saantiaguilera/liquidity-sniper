@@ -207,8 +207,6 @@ library UniswapV2Library {
     }
 }
 
-
-
 interface IUniswapV2Factory {
   event PairCreated(address indexed token0, address indexed token1, address pair, uint);
   function getPair(address tokenA, address tokenB) external view returns (address pair);
@@ -218,7 +216,6 @@ interface IUniswapV2Factory {
   function feeToSetter() external view returns (address);
   function createPair(address tokenA, address tokenB) external returns (address pair);
 }
-
 
 interface IUniswapV2Pair {
   event Approval(address indexed owner, address indexed spender, uint value);
@@ -465,7 +462,6 @@ library DYDXDataTypes {
         uint256 number; // A nonce that allows a single address to control many accounts
     }
 }
-
 
 interface IDYDXFlashBorrower {
 
