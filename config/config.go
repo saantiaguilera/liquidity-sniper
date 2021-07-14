@@ -4,8 +4,8 @@ import (
 	"crypto/ecdsa"
 	"encoding/json"
 	"fmt"
-	"github.com/saantiaguilera/liquidity-AX-50/ax-50/contracts/erc20"
-	"github.com/saantiaguilera/liquidity-AX-50/ax-50/contracts/uniswap"
+	erc202 "github.com/saantiaguilera/liquidity-ax-50/third_party/erc20"
+	uniswap2 "github.com/saantiaguilera/liquidity-ax-50/third_party/uniswap"
 	"io/ioutil"
 	"log"
 	"math/big"
@@ -16,7 +16,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-// Dark forester account is the account that owns the Trigger and SandwichRouter contracts and can configure it beforehand.
+// Dark forester account is the account that owns the Trigger and SandwichRouter contract and can configure it beforehand.
 // It is also the dest account for the sniped tokens.
 
 var accountAddress = "0x81F37cc0EcAE1dD1c89D79A98f857563873cFA76"
@@ -28,8 +28,8 @@ var WBNB_ADDRESS = common.HexToAddress("0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc09
 var BUSD_ADDRESS = common.HexToAddress("0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56")
 var CAKE_FACTORY_ADDRESS = common.HexToAddress("0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73")
 var CAKE_ROUTER_ADDRESS = "0x10ED43C718714eb63d5aA57B78B54704E256024E"
-var WBNBERC20 *erc20.Erc20
-var FACTORY *uniswap.IPancakeFactory
+var WBNBERC20 *erc202.Erc20
+var FACTORY *uniswap2.IPancakeFactory
 var CHAINID = big.NewInt(56)
 var STANDARD_GAS_PRICE = big.NewInt(5000000000) // 5 GWEI
 var Nullhash = common.HexToHash("0x0000000000000000000000000000000000000000000000000000000000000000")
@@ -52,7 +52,7 @@ var PCS_ADDLIQ bool = Sniping
 var TRIGGER_ADDRESS = common.HexToAddress("0xaE23a2ADb82BcF36A14D9c158dDb1E0926263aFC")
 
 // you can choose the base currency. 99% it's WBNB but sometimes it's BUSD
-var TOKENPAIRED = WBNB_ADDRESS
+var TOKENPAIRED = WBNB_ADDRESS // base currency
 var Snipe SnipeConfiguration
 
 // targeted token to buy (BEP20 address)
@@ -70,19 +70,8 @@ var AddressesWatched = make(map[common.Address]AddressData)
 type SnipeConfiguration struct {
 	TokenAddress common.Address // token address to monitor
 	TokenPaired  common.Address
-	Tkn          *erc20.Erc20
+	Tkn          *erc202.Erc20
 	MinLiq       *big.Int // min liquidity that will be added to the pool
-}
-
-type Market struct {
-	Address            common.Address
-	Name               string
-	Tested             bool
-	Whitelisted        bool
-	CumulatedProfits   float64
-	CumulatedBNBBought float64
-	Liquidity          float64
-	ManuallyDisabled   bool
 }
 
 type Address struct {
@@ -95,12 +84,6 @@ type AddressData struct {
 	Watched bool
 }
 
-type Account struct {
-	Address common.Address
-	Pk      string
-	RawPk   *ecdsa.PrivateKey
-}
-
 ///////////// INITIIALISER FUNCS /////////////////
 func _initConst(client *ethclient.Client) {
 	AX_50_ACCOUNT.Address = common.HexToAddress(accountAddress)
@@ -111,23 +94,22 @@ func _initConst(client *ethclient.Client) {
 	}
 	AX_50_ACCOUNT.RawPk = rawPk
 
-	factory, err := uniswap.NewIPancakeFactory(CAKE_FACTORY_ADDRESS, client)
+	factory, err := uniswap2.NewIPancakeFactory(CAKE_FACTORY_ADDRESS, client)
 	if err != nil {
 		log.Fatalln("InitFilters: couldn't embed FACTORY: ", err)
 	}
 	FACTORY = factory
 
-	wbnb, err := erc20.NewErc20(WBNB_ADDRESS, client)
+	wbnb, err := erc202.NewErc20(WBNB_ADDRESS, client)
 	if err != nil {
 		log.Fatalln("InitFilters: couldn't fetch WBNB token: ", err)
 	}
 	WBNBERC20 = wbnb
 
-	busd, err := erc20.NewErc20(BUSD_ADDRESS, client)
+	busd, err := erc202.NewErc20(BUSD_ADDRESS, client)
 	if err != nil {
 		log.Fatalln("InitFilters: couldn't fetch BUSD token: ", err)
 	}
-	BUSDERC20 = busd
 }
 
 func _initSniper(client *ethclient.Client) {
@@ -142,7 +124,7 @@ func _initSniper(client *ethclient.Client) {
 		Snipe.MinLiq = ml
 		fmt.Println(Snipe.MinLiq)
 
-		tkn, err := erc20.NewErc20(common.HexToAddress(TTB), client)
+		tkn, err := erc202.NewErc20(common.HexToAddress(TTB), client)
 		if err != nil {
 			log.Fatalln("InitFilters: couldn't fetch token: ", err)
 		}

@@ -3,11 +3,10 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	config2 "github.com/saantiaguilera/liquidity-ax-50/config"
+	uniswap2 "github.com/saantiaguilera/liquidity-ax-50/third_party/uniswap"
 	"math/big"
 	"strings"
-
-	"github.com/saantiaguilera/liquidity-AX-50/ax-50/config"
-	"github.com/saantiaguilera/liquidity-AX-50/ax-50/contracts/uniswap"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -26,70 +25,7 @@ var swapTokensForExactTokens = [4]byte{0x88, 0x03, 0xdb, 0xee}
 var addLiquidity = [4]byte{0xe8, 0xe3, 0x37, 0x00}
 
 // standard ABI
-var routerAbi, _ = abi.JSON(strings.NewReader(uniswap.PancakeRouterABI))
-
-// This handler has been though for the sandwicher part of the bot.
-func HandleSwapExactETHForTokens(tx *types.Transaction, client *ethclient.Client) {
-	defer reinitBinaryResult()
-	// 0) parse the info of the swap so that we can access it easily
-	buildSwapETHData(tx, client)
-
-	// 1) Do security checks. We want the base currency of the trade to be solely WBNB
-	if SwapData.Paired != config.WBNB_ADDRESS {
-		return
-	}
-	Rtkn0, Rbnb0 := getReservesData(client)
-	if Rbnb0 == nil || Rbnb0.Cmp(config.ACCEPTABLELIQ) == -1 {
-		return
-	}
-
-	// 2) Assess profitability of the frontrun
-	success := assessProfitability(client, SwapData.Token, tx.Value(), SwapData.AmountOutMin, Rtkn0, Rbnb0)
-	// 3) If the frontrun pass the profitability test, init sandwich tx
-	if success == true {
-		// we check if the market has already been tested
-		if config.IN_SANDWICH_BOOK[SwapData.Token] == true {
-			// we check if the test has been successful as we don't want to snipe on a coin that implement stupid seller tax
-			if config.SANDWICH_BOOK[SwapData.Token].Whitelisted == true && config.SANDWICH_BOOK[SwapData.Token].ManuallyDisabled == false {
-				// reminder: if MonitorModeOnly == true in the config file, we remain spectator only. We identify sandwich without performing them.
-				if config.MonitorModeOnly == false {
-
-					// sandwich attack is performed here. It can come with 2 flavor: the function sandwiching defined in sandwicher.go and sandwichingOnSteroid definied in sandwicherOnSteroid.go. In fact, those 2 functions correspond to 2 iteration of the attack i tried.
-					// sandwiching: initialise a frontrunning tx. Then listen until victim's tx is confirmed. If during that timelapse a bot try to spoil the attack, we try to send a cancel tx. If not, we send a backrunning tx once victimm's tx is validated.
-					//sandwichingOnSteroid: the problem with the first approach was that EVERY TIME, a counter-bot will try to fuck our sandwich attack. Have a look at the addresses of the config/ennemy_book.json. Those are the bots that countered me each time on bsc. So, the approach with sandwichingOnSteroid is different. We start with a simple frontrunningg tx. Then we speed up / cancel this tx multiple times randomly, which produce a random gas escalation intended to deceive counter-bots. But it still wasn't profitable and other bots were still able to arb me.
-
-					sandwiching(tx, client)
-					//sandwichingOnSteroid(tx, client)
-
-				} else {
-					fmt.Println("MonitorModeOnly: new sandwich possible: ", getTokenName(SwapData.Token, client), SwapData.Token)
-				}
-			}
-
-		} else {
-			// if we identify a possible sandwich on a unknown market, we want register it and test hability to buy/sell with python scripts.
-			if config.NewMarketAdded[SwapData.Token] == false {
-				fmt.Println("new market to test: ")
-
-				newMarketContent := NewMarketContent{
-					SwapData.Token,
-					getTokenName(SwapData.Token, client),
-					false,
-					false,
-					0,
-					0,
-					0,
-					formatEthWeiToEther(Rbnb0),
-					false,
-				}
-				config.NewMarketAdded[SwapData.Token] = true
-				_flushNewmarket(&newMarketContent)
-			}
-		}
-	}
-
-	return
-}
+var routerAbi, _ = abi.JSON(strings.NewReader(uniswap2.PancakeRouterABI))
 
 // interest Sniping and filter addliquidity tx
 func HandleAddLiquidity(tx *types.Transaction, client *ethclient.Client, topSnipe chan *big.Int) {
@@ -100,13 +36,13 @@ func HandleAddLiquidity(tx *types.Transaction, client *ethclient.Client, topSnip
 	sender := getTxSenderAddressQuick(tx, client)
 	// security checks
 	// does the liquidity addition deals with the token i'm targetting?
-	if addLiquidity.TokenAddressA == config.Snipe.TokenAddress || addLiquidity.TokenAddressB == config.Snipe.TokenAddress {
+	if addLiquidity.TokenAddressA == config2.Snipe.TokenAddress || addLiquidity.TokenAddressB == config2.Snipe.TokenAddress {
 		// does the liquidity is added on the right pair?
-		if addLiquidity.TokenAddressA == config.Snipe.TokenPaired || addLiquidity.TokenAddressB == config.Snipe.TokenPaired {
-			tknBalanceSender, _ := config.Snipe.Tkn.BalanceOf(&bind.CallOpts{}, sender)
+		if addLiquidity.TokenAddressA == config2.Snipe.TokenPaired || addLiquidity.TokenAddressB == config2.Snipe.TokenPaired {
+			tknBalanceSender, _ := config2.Snipe.Tkn.BalanceOf(&bind.CallOpts{}, sender)
 			var AmountTknMin *big.Int
 			var AmountPairedMin *big.Int
-			if addLiquidity.TokenAddressA == config.Snipe.TokenAddress {
+			if addLiquidity.TokenAddressA == config2.Snipe.TokenAddress {
 				AmountTknMin = addLiquidity.AmountTokenAMin
 				AmountPairedMin = addLiquidity.AmountTokenBMin
 			} else {
@@ -117,7 +53,7 @@ func HandleAddLiquidity(tx *types.Transaction, client *ethclient.Client, topSnip
 			checkBalanceTknLP := AmountTknMin.Cmp(tknBalanceSender)
 			if checkBalanceTknLP == 0 || checkBalanceTknLP == -1 {
 				// we check if the liquidity provider add enough collateral (WBNB or BUSD) as expected by our configuration. Bc sometimes the dev fuck the pleb and add way less liquidity that was advertised on telegram.
-				if AmountPairedMin.Cmp(config.Snipe.MinLiq) == 1 {
+				if AmountPairedMin.Cmp(config2.Snipe.MinLiq) == 1 {
 					if SNIPEBLOCK == false {
 
 						// reminder: the Clogg goroutine launched in ax-50.go is still blocking and is waiting for the gas price value. Here we unblock it. And all the armed bees are launched, which clogg the mempool and increase the chances of successful sniping.
@@ -133,7 +69,7 @@ func HandleAddLiquidity(tx *types.Transaction, client *ethclient.Client, topSnip
 					}
 
 				} else {
-					fmt.Println("liquidity added but lower than expected : ", formatEthWeiToEther(AmountPairedMin), getTokenSymbol(config.Snipe.TokenPaired, client), " vs", formatEthWeiToEther(config.Snipe.MinLiq), " expected")
+					fmt.Println("liquidity added but lower than expected : ", formatEthWeiToEther(AmountPairedMin), getTokenSymbol(config2.Snipe.TokenPaired, client), " vs", formatEthWeiToEther(config2.Snipe.MinLiq), " expected")
 				}
 			}
 		}
@@ -145,17 +81,17 @@ func HandleAddLiquidityETH(tx *types.Transaction, client *ethclient.Client, topS
 	// parse the info of the swap so that we can access it easily
 	var addLiquidity = buildAddLiquidityEthData(tx)
 	sender := getTxSenderAddressQuick(tx, client)
-	tknBalanceSender, _ := config.Snipe.Tkn.BalanceOf(&bind.CallOpts{}, sender)
+	tknBalanceSender, _ := config2.Snipe.Tkn.BalanceOf(&bind.CallOpts{}, sender)
 	checkBalanceLP := addLiquidity.AmountTokenMin.Cmp(tknBalanceSender)
 
 	// security checks:
 	// does the liquidity addition deals with the token i'm targetting?
-	if addLiquidity.TokenAddress == config.Snipe.TokenAddress {
+	if addLiquidity.TokenAddress == config2.Snipe.TokenAddress {
 		// we check if the liquidity provider really possess the liquidity he wants to add, because it is possible tu be lured by other bots that fake liquidity addition.
 		if checkBalanceLP == 0 || checkBalanceLP == -1 {
 			// we check if the liquidity provider add enough collateral (WBNB or BUSD) as expected by our configuration. Bc sometimes the dev fuck the pleb and add way less liquidity that was advertised on telegram.
-			if tx.Value().Cmp(config.Snipe.MinLiq) == 1 {
-				if addLiquidity.AmountETHMin.Cmp(config.Snipe.MinLiq) == 1 {
+			if tx.Value().Cmp(config2.Snipe.MinLiq) == 1 {
+				if addLiquidity.AmountETHMin.Cmp(config2.Snipe.MinLiq) == 1 {
 					if SNIPEBLOCK == false {
 						// reminder: the Clogg goroutine launched in ax-50.go is still blocking and is waiting for the gas price value. Here we unblock it. And all the armed bees are launched, which clogg the mempool and increase the chances of successful sniping.
 						topSnipe <- tx.GasPrice()
@@ -170,7 +106,7 @@ func HandleAddLiquidityETH(tx *types.Transaction, client *ethclient.Client, topS
 					}
 				}
 			} else {
-				fmt.Println("liquidity added but lower than expected : ", formatEthWeiToEther(tx.Value()), " BNB", " vs", formatEthWeiToEther(config.Snipe.MinLiq), " expected")
+				fmt.Println("liquidity added but lower than expected : ", formatEthWeiToEther(tx.Value()), " BNB", " vs", formatEthWeiToEther(config2.Snipe.MinLiq), " expected")
 			}
 		}
 	}
@@ -184,16 +120,12 @@ func handleUniswapTrade(tx *types.Transaction, client *ethclient.Client, topSnip
 	copy(txFunctionHash[:], tx.Data()[:4])
 	switch txFunctionHash {
 
-	case swapExactETHForTokens:
-		if config.Sandwicher == true {
-			HandleSwapExactETHForTokens(tx, client)
-		}
 	case addLiquidityETH:
-		if config.PCS_ADDLIQ == true {
+		if config2.PCS_ADDLIQ == true {
 			HandleAddLiquidityETH(tx, client, topSnipe)
 		}
 	case addLiquidity:
-		if config.PCS_ADDLIQ == true {
+		if config2.PCS_ADDLIQ == true {
 			HandleAddLiquidity(tx, client, topSnipe)
 		}
 	}

@@ -6,14 +6,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	config2 "github.com/saantiaguilera/liquidity-ax-50/config"
 	"io/ioutil"
 	"log"
 	"math/big"
 	"math/rand"
 	"sync"
 	"time"
-
-	"github.com/saantiaguilera/liquidity-AX-50/ax-50/config"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -46,7 +45,7 @@ func sendBee(client *ethclient.Client, ctx context.Context, bee Bee, HashResults
 	beeCtx, _ := context.WithCancel(ctx)
 	nonce := bee.PendingNonce
 	// trigger tx are sent to our trigger contract.
-	to := config.TRIGGER_ADDRESS
+	to := config2.TRIGGER_ADDRESS
 	// this is the selector of the snipeListing function of the Trigger smart contract.
 	data := []byte{0x4e, 0xfa, 0xc3, 0x29}
 	value := big.NewInt(0)
@@ -54,7 +53,7 @@ func sendBee(client *ethclient.Client, ctx context.Context, bee Bee, HashResults
 	// create the tx
 	txBee := types.NewTransaction(nonce, to, value, gasLimit, gasPrice, data)
 	// sign the tx
-	signedTxBee, err := types.SignTx(txBee, types.NewEIP155Signer(config.CHAINID), bee.RawPk)
+	signedTxBee, err := types.SignTx(txBee, types.NewEIP155Signer(config2.CHAINID), bee.RawPk)
 	if err != nil {
 		fmt.Println("sendBee: problem with signedTxBee : ", err)
 	}
@@ -63,7 +62,7 @@ func sendBee(client *ethclient.Client, ctx context.Context, bee Bee, HashResults
 
 	if err != nil {
 		fmt.Println("txpoolClogg: ", err)
-		HashResults <- config.Nullhash
+		HashResults <- config2.Nullhash
 
 	} else {
 		fmt.Println(signedTxBee.Hash().Hex())
@@ -253,16 +252,16 @@ func Clogg(client *ethclient.Client, topAction <-chan *big.Int) {
 			// proudly displaying the tx receipt
 			for _, log := range receipt.Logs {
 
-				if log.Address == config.Snipe.TokenAddress {
+				if log.Address == config2.Snipe.TokenAddress {
 					hexAmount := hex.EncodeToString(log.Data)
 					var value = new(big.Int)
 					value.SetString(hexAmount, 16)
-					amountBought := formatERC20Decimals(value, config.Snipe.TokenAddress, client)
-					pairAddress, _ := config.FACTORY.GetPair(&bind.CallOpts{}, config.Snipe.TokenAddress, config.WBNB_ADDRESS)
+					amountBought := formatERC20Decimals(value, config2.Snipe.TokenAddress, client)
+					pairAddress, _ := config2.FACTORY.GetPair(&bind.CallOpts{}, config2.Snipe.TokenAddress, config2.WBNB_ADDRESS)
 
 					fmt.Println("---> sniping succeeded!!!")
 					fmt.Println("hash : ", res.Hash)
-					fmt.Println("token : ", config.Snipe.TokenAddress)
+					fmt.Println("token : ", config2.Snipe.TokenAddress)
 					fmt.Println("pairAddress : ", pairAddress)
 					fmt.Println("amount Bought : ", amountBought)
 				}

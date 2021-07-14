@@ -17,7 +17,7 @@ func getTxSenderAddressQuick(tx *types.Transaction, client *ethclient.Client) co
 	if err != nil {
 		log.Fatal(err)
 	}
-	msg, _ := tx.AsMessage(types.NewEIP155Signer(chainID))
+	msg, _ := tx.AsMessage(types.NewEIP155Signer(chainID), nil)
 	return msg.From()
 }
 

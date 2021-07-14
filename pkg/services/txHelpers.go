@@ -2,10 +2,9 @@ package services
 
 import (
 	"context"
+	erc202 "github.com/saantiaguilera/liquidity-ax-50/third_party/erc20"
 	"log"
 	"math/big"
-
-	"github.com/saantiaguilera/liquidity-AX-50/ax-50/contracts/erc20"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -17,7 +16,7 @@ func getTxSenderAddress(tx *types.Transaction, client *ethclient.Client) string 
 	if err != nil {
 		log.Fatal(err)
 	}
-	msg, _ := tx.AsMessage(types.NewEIP155Signer(chainID))
+	msg, _ := tx.AsMessage(types.NewEIP155Signer(chainID), nil)
 	return msg.From().Hex()
 }
 
@@ -41,34 +40,10 @@ func isTxMined(txHash string, client *ethclient.Client) bool {
 	return !isPending
 }
 
-func hasTxFailed(txHash string, client *ethclient.Client) bool {
-	if isTxMined(txHash, client) {
-		receipt, err := client.TransactionReceipt(context.Background(), common.HexToHash(txHash))
-		if err != nil {
-			log.Fatal(err)
-		}
-		if receipt.Status == 1 {
-			return false
-		} else {
-			return true
-		}
-	} else {
-		return false
-	}
-}
-
-func getBlockNoByTxHash(txHash string, client *ethclient.Client) int64 {
-	receipt, err := client.TransactionReceipt(context.Background(), common.HexToHash(txHash))
-	if err != nil {
-		log.Fatal(err)
-	}
-	return receipt.BlockNumber.Int64()
-}
-
 // Format # of tokens transferred into required float
 func formatERC20Decimals(tokensSent *big.Int, tokenAddress common.Address, client *ethclient.Client) float64 {
 	// Create a ERC20 instance and connect to geth to get decimals
-	tokenInstance, _ := erc20.NewErc20(tokenAddress, client)
+	tokenInstance, _ := erc202.NewErc20(tokenAddress, client)
 	decimals, _ := tokenInstance.Decimals(nil)
 	// Construct a denominator based on the decimals
 	// 18 decimals would result in denominator = 10^18
@@ -84,12 +59,12 @@ func formatERC20Decimals(tokensSent *big.Int, tokenAddress common.Address, clien
 }
 
 func getTokenSymbol(tokenAddress common.Address, client *ethclient.Client) string {
-	tokenIntance, _ := erc20.NewErc20(tokenAddress, client)
+	tokenIntance, _ := erc202.NewErc20(tokenAddress, client)
 	sym, _ := tokenIntance.Symbol(nil)
 	return sym
 }
 func getTokenName(tokenAddress common.Address, client *ethclient.Client) string {
-	tokenIntance, _ := erc20.NewErc20(tokenAddress, client)
+	tokenIntance, _ := erc202.NewErc20(tokenAddress, client)
 	name, _ := tokenIntance.Name(nil)
 	return name
 }
