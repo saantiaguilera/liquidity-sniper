@@ -1,17 +1,14 @@
 package config
 
 import (
-	"bufio"
 	"crypto/ecdsa"
 	"encoding/json"
 	"fmt"
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/contracts/erc20"
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/contracts/uniswap"
 	"io/ioutil"
 	"log"
 	"math/big"
-	"os"
-
-	"github.com/saantiaguilera/liquidity-AX-50/ax-50/contracts/erc20"
-	"github.com/saantiaguilera/liquidity-AX-50/ax-50/contracts/uniswap"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -32,7 +29,6 @@ var BUSD_ADDRESS = common.HexToAddress("0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D
 var CAKE_FACTORY_ADDRESS = common.HexToAddress("0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73")
 var CAKE_ROUTER_ADDRESS = "0x10ED43C718714eb63d5aA57B78B54704E256024E"
 var WBNBERC20 *erc20.Erc20
-var BUSDERC20 *erc20.Erc20
 var FACTORY *uniswap.IPancakeFactory
 var CHAINID = big.NewInt(56)
 var STANDARD_GAS_PRICE = big.NewInt(5000000000) // 5 GWEI
@@ -64,57 +60,6 @@ var TTB = "0x9412F9AB702AfBd805DECe8e0627427461eF0602"
 
 // ML= minimum liquidity expected when dev add liquidity. We don't want to snipe if the team doesn't add the min amount of liq we expect. it's an important question to solve in the telegram of the project. You can also mmonitor bscscan and see the repartition of WBNB among the address that hold the targeted token and deduce the WBNB liq that wiill be added.
 var ML = 200
-
-///////// SANDWICH CONFIG (Be careful: not profitable!) ////////////
-
-var Sandwicher bool = false
-
-// allows spectator mode for tx that would have been profitable if sandwich realised successfully
-var MonitorModeOnly bool = false
-
-// max slippage we allow in % for our sandwich in tx
-var SandwichInMaxSlippage = 0.5
-
-// gas price for our sandwich in tx in multiples of victim-s tx gas. Must be high enough for favourable ordering inside the block.
-var SandwichInGasPriceMultiplier = 10
-
-// max number of WBNB we are ok to spend in the sandwich in tx
-var Sandwicher_maxbound = 15 //  BNB
-// min number of WBNB we are ok to spend in the sandwich in tx
-var Sandwicher_minbound = 1    //  BNB
-var Sandwicher_baseunit = 0.02 //  BNB
-// min profit expected in bnb to be worth launching a sandwich attack
-var Sandwicher_minprofit = 0.015 //  BNB
-// min liquidity of the pool on which we want to perform sandwich
-var Sandwicher_acceptable_liq = 100 // BNB
-// stop everything and panic if we lose cumulated > 2 BNB on the different attacks
-var Sandwicher_stop_loss = 2
-
-// we basicaly calculate the max amount of BNB we can enter on a sandwich without breaking victim's slippage. Then substract Sandwich_margin_amountIn to it to be sure
-var Sandwich_margin_amountIn = 0.01 // BNB
-// max gas price we tolerate for a sandwich in tx
-var Sandwich_max_gwei_to_pay = 1000
-
-// sandwich book contains all the authorised markets, which means markets I can ggo in and out without stupid sell taxes that are widespread among meme tokens
-var SANDWICH_BOOK = make(map[common.Address]Market)
-var IN_SANDWICH_BOOK = make(map[common.Address]bool)
-var NewMarketAdded = make(map[common.Address]bool)
-
-// The sandwich ladder is a graduation going from MINBOUND to MAXBOUND with a BASE_UNIT interval. I use it to do a binary search to determmine what is the optimal amount of BNB I can use to do the sandwich in tx without breaking the slippage of the victim.
-var SANDWICHER_LADDER []*big.Int
-
-// List of bots that fucked me on almost all sandwich attacks attempts.. The list is defined in ennemmy_book.json
-var ENNEMIES = make(map[common.Address]bool)
-var SANDWICHIN_MAXSLIPPAGE int64
-var SANDWICHIN_GASPRICE_MULTIPLIER int64
-var BASE_UNIT *big.Int
-var MINBOUND *big.Int
-var MAXBOUND *big.Int
-var MINPROFIT *big.Int
-var ACCEPTABLELIQ *big.Int
-var STOPLOSSBALANCE *big.Int
-var AMINMARGIN *big.Int
-var MAXGWEIFRONTRUN *big.Int
 
 ///////// BIG TRANSFERS CONFIG //////////
 var BNB = "50000000000000000000" // 50 BNB
@@ -185,91 +130,6 @@ func _initConst(client *ethclient.Client) {
 	BUSDERC20 = busd
 }
 
-func _initSandwicher() {
-	// initialize SANDWICHER variables
-	mul10pow18, _ := new(big.Int).SetString("1000000000000000000", 10) // 10**18
-	mul10pow14, _ := new(big.Int).SetString("100000000000000", 10)     // 10**18
-	SANDWICHIN_MAXSLIPPAGE = int64((100 - SandwichInMaxSlippage) * 1000000)
-	SANDWICHIN_GASPRICE_MULTIPLIER = int64(SandwichInGasPriceMultiplier * 1000000)
-
-	minbound := big.NewInt(int64(Sandwicher_minbound))
-	minbound.Mul(minbound, mul10pow18)
-	MINBOUND = minbound
-
-	maxbound := big.NewInt(int64(Sandwicher_maxbound))
-	maxbound.Mul(maxbound, mul10pow18)
-	MAXBOUND = maxbound
-
-	liq := big.NewInt(int64(Sandwicher_acceptable_liq))
-	liq.Mul(liq, mul10pow18)
-	ACCEPTABLELIQ = liq
-
-	gwei := big.NewInt(1000000000)
-	gwei.Mul(gwei, big.NewInt(int64(Sandwich_max_gwei_to_pay)))
-	MAXGWEIFRONTRUN = gwei
-
-	Sandwich_margin_amountIn1000x := 1000 * Sandwich_margin_amountIn
-	aminMargin := big.NewInt(int64(Sandwich_margin_amountIn1000x))
-	aminMargin.Mul(aminMargin, mul10pow14)
-	AMINMARGIN = aminMargin
-
-	Sandwicher_minprofitx1000 := 10000 * Sandwicher_minprofit
-	minProfit := big.NewInt(int64(Sandwicher_minprofitx1000))
-	minProfit.Mul(minProfit, mul10pow14)
-	MINPROFIT = minProfit
-
-	Sandwicher_baseunitx1000 := 10000 * Sandwicher_baseunit
-	baseUnit := big.NewInt(int64(Sandwicher_baseunitx1000))
-	baseUnit.Mul(baseUnit, mul10pow14)
-	BASE_UNIT = baseUnit
-
-	sl := big.NewInt(int64(Sandwicher_stop_loss))
-	sl.Mul(sl, mul10pow18)
-	balance := GetTriggerWBNBBalance()
-	sl.Sub(balance, sl)
-	STOPLOSSBALANCE = sl
-
-	// create sandwicher amount ladder for the binary search in services/assessProfitability.go
-	counter := new(big.Int).Set(MINBOUND)
-	SANDWICHER_LADDER = append(SANDWICHER_LADDER, MINBOUND) // initial value of 1 BNB
-	for counter.Cmp(MAXBOUND) != 1 {
-		counter.Add(counter, BASE_UNIT)
-		var toIncrement = new(big.Int).Set(counter)
-		SANDWICHER_LADDER = append(SANDWICHER_LADDER, toIncrement)
-	}
-
-	// load sandwich_book:
-	data, err := ioutil.ReadFile("./config/sandwich_book.json")
-	if err != nil {
-		log.Fatalln("cannot load sandwich_book.json", err)
-	}
-	err = json.Unmarshal(data, &SANDWICH_BOOK)
-	if err != nil {
-		log.Fatalln("cannot unmarshall data into SANDWICH_BOOK", err)
-	}
-	for market := range SANDWICH_BOOK {
-		IN_SANDWICH_BOOK[market] = true
-	}
-	file, _ := os.Create("./config/sandwich_book_to_test.json")
-	writer := bufio.NewWriter(file)
-	_, err = writer.WriteString("[\n")
-	writer.Flush()
-
-	//load ennemy book
-	data, err = ioutil.ReadFile("./config/ennemy_book.json")
-	if err != nil {
-		log.Fatalln("cannot load ennemy_book.json", err)
-	}
-	var ennemies []common.Address
-	err = json.Unmarshal(data, &ennemies)
-	if err != nil {
-		log.Fatalln("cannot unmarshall data into ennemies", err)
-	}
-	for _, addr := range ennemies {
-		ENNEMIES[addr] = true
-	}
-}
-
 func _initSniper(client *ethclient.Client) {
 	if Sniping == true {
 		Snipe.TokenAddress = common.HexToAddress(TTB)
@@ -292,7 +152,6 @@ func _initSniper(client *ethclient.Client) {
 
 func InitDF(client *ethclient.Client) {
 	_initConst(client)
-	_initSandwicher()
 	_initSniper(client)
 
 	// initialize BIG_BNB_TRANSFER

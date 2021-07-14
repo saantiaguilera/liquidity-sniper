@@ -146,7 +146,7 @@ func main() {
 	flag.Parse()
 
 	rpcClient := services.InitRPCClient(ClientEntered)
-	client := services.GetCurrentClient()
+	client := services.GetCurrentClient() // NewClient(rpcClient)
 
 	config.InitDF(client)
 

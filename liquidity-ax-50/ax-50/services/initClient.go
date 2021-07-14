@@ -51,6 +51,7 @@ func GetCurrentClient() *ethclient.Client {
 func InitRPCClient(_ClientEntered *string) *rpc.Client {
 
 	ClientEntered = _ClientEntered
+	// rpc.DialContext(ctx, rawurl) es esto.
 	var clientValue reflect.Value
 	clientValue = reflect.ValueOf(GetCurrentClient()).Elem()
 	fieldStruct := clientValue.FieldByName("c")
