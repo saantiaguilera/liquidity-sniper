@@ -1,4 +1,4 @@
-AX-50 Liquidity Sniper
+# AX-50 Liquidity Sniper
 
 This bot require you to run the GETH client + use the eth-brownie framework. All addresses and private keys contained have been changed for the sake of this public repo.
 
