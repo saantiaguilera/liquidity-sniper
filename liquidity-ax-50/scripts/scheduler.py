@@ -260,10 +260,10 @@ def createSellersBook():
 
 #///////////// SEND  CONFIGURATION //////////////////////////////////////
 
-# censored function for the public repo as it was used to send dark_forester/global to my aws server 
+# censored function for the public repo as it was used to send ax-50/config to my aws server
 def sendGlobalToDarkForester():
     ipt = input(
-        "Send the /global folder to AWS server ? ('y' for yes, any other key for no)")
+        "Send the /config folder to AWS server ? ('y' for yes, any other key for no)")
     if ipt.lower() == 'y':
         keyboard = Controller()
         keyboard.tap(Key.cmd)
@@ -274,7 +274,7 @@ def sendGlobalToDarkForester():
         sleep(0.2)
 
         keyboard.type(
-            'scp -i bsc_useast.pem -r ./PATH/dark_forester/global ubuntu@xxxxxxxxx.amazonaws.com:dark_forester')
+            'scp -i bsc_useast.pem -r ./PATH/ax-50/config ubuntu@xxxxxxxxx.amazonaws.com:ax-50')
         sleep(0.2)
         keyboard.tap(Key.enter)
         sleep(10)
@@ -282,7 +282,7 @@ def sendGlobalToDarkForester():
         sleep(0.2)
         keyboard.tap(Key.enter)
 
-        print("--> /global folder sucessfully sent!")
+        print("--> /config folder sucessfully sent!")
 
 #///////////// TRIGGER CONFIGURATION //////////////////////////////////////
 

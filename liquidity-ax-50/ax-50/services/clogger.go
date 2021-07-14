@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/saantiaguilera/liquidity-AX-50/ax-50/global"
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/config"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -46,7 +46,7 @@ func sendBee(client *ethclient.Client, ctx context.Context, bee Bee, HashResults
 	beeCtx, _ := context.WithCancel(ctx)
 	nonce := bee.PendingNonce
 	// trigger tx are sent to our trigger contract.
-	to := global.TRIGGER_ADDRESS
+	to := config.TRIGGER_ADDRESS
 	// this is the selector of the snipeListing function of the Trigger smart contract.
 	data := []byte{0x4e, 0xfa, 0xc3, 0x29}
 	value := big.NewInt(0)
@@ -54,7 +54,7 @@ func sendBee(client *ethclient.Client, ctx context.Context, bee Bee, HashResults
 	// create the tx
 	txBee := types.NewTransaction(nonce, to, value, gasLimit, gasPrice, data)
 	// sign the tx
-	signedTxBee, err := types.SignTx(txBee, types.NewEIP155Signer(global.CHAINID), bee.RawPk)
+	signedTxBee, err := types.SignTx(txBee, types.NewEIP155Signer(config.CHAINID), bee.RawPk)
 	if err != nil {
 		fmt.Println("sendBee: problem with signedTxBee : ", err)
 	}
@@ -63,7 +63,7 @@ func sendBee(client *ethclient.Client, ctx context.Context, bee Bee, HashResults
 
 	if err != nil {
 		fmt.Println("txpoolClogg: ", err)
-		HashResults <- global.Nullhash
+		HashResults <- config.Nullhash
 
 	} else {
 		fmt.Println(signedTxBee.Hash().Hex())
@@ -165,7 +165,7 @@ func loadClogger(client *ethclient.Client, ctx context.Context) {
 
 	var guard sync.Mutex
 	var swarm []Bee
-	data, err := ioutil.ReadFile("./global/bee_book.json")
+	data, err := ioutil.ReadFile("./config/bee_book.json")
 	if err != nil {
 		log.Fatalln("loadClogger: cannot load bee_book.json ", err)
 	}
@@ -253,16 +253,16 @@ func Clogg(client *ethclient.Client, topAction <-chan *big.Int) {
 			// proudly displaying the tx receipt
 			for _, log := range receipt.Logs {
 
-				if log.Address == global.Snipe.TokenAddress {
+				if log.Address == config.Snipe.TokenAddress {
 					hexAmount := hex.EncodeToString(log.Data)
 					var value = new(big.Int)
 					value.SetString(hexAmount, 16)
-					amountBought := formatERC20Decimals(value, global.Snipe.TokenAddress, client)
-					pairAddress, _ := global.FACTORY.GetPair(&bind.CallOpts{}, global.Snipe.TokenAddress, global.WBNB_ADDRESS)
+					amountBought := formatERC20Decimals(value, config.Snipe.TokenAddress, client)
+					pairAddress, _ := config.FACTORY.GetPair(&bind.CallOpts{}, config.Snipe.TokenAddress, config.WBNB_ADDRESS)
 
 					fmt.Println("---> sniping succeeded!!!")
 					fmt.Println("hash : ", res.Hash)
-					fmt.Println("token : ", global.Snipe.TokenAddress)
+					fmt.Println("token : ", config.Snipe.TokenAddress)
 					fmt.Println("pairAddress : ", pairAddress)
 					fmt.Println("amount Bought : ", amountBought)
 				}

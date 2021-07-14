@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/saantiaguilera/liquidity-AX-50/ax-50/global"
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/config"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -38,14 +38,14 @@ func TxClassifier(tx *types.Transaction, client *ethclient.Client, topSnipe chan
 		}
 		// fmt.Println("new tx to TxClassifier")
 		if tx.To() != nil {
-			if global.AddressesWatched[getTxSenderAddressQuick(tx, client)].Watched == true {
+			if config.AddressesWatched[getTxSenderAddressQuick(tx, client)].Watched == true {
 				go handleWatchedAddressTx(tx, client)
-			} else if tx.To().Hex() == global.CAKE_ROUTER_ADDRESS {
+			} else if tx.To().Hex() == config.CAKE_ROUTER_ADDRESS {
 				if UNISWAPBLOCK == false && len(tx.Data()) >= 4 {
 					// pankakeSwap events are managed in their own file uniswapClassifier.go
 					go handleUniswapTrade(tx, client, topSnipe)
 				}
-			} else if tx.Value().Cmp(&global.BigTransfer) == 1 && global.BIG_BNB_TRANSFER == true {
+			} else if tx.Value().Cmp(&config.BigTransfer) == 1 && config.BIG_BNB_TRANSFER == true {
 				fmt.Printf("\nBIG TRANSFER: %v, Value: %v\n", tx.Hash().Hex(), formatEthWeiToEther(tx.Value()))
 			}
 		}
@@ -58,7 +58,7 @@ func TxClassifier(tx *types.Transaction, client *ethclient.Client, topSnipe chan
 func FrontrunningWatchdog(tx *types.Transaction, client *ethclient.Client) {
 	// is executed only once
 	if FRONTRUNNINGWATCHDOGBLOCK == false && tx.To() != nil {
-		if global.ENNEMIES[*tx.To()] == true {
+		if config.ENNEMIES[*tx.To()] == true {
 			fmt.Printf("\n%v trying to fuck us!", *tx.To())
 			SomeoneTryToFuckMe <- struct{}{}
 			FRONTRUNNINGWATCHDOGBLOCK = true
@@ -69,9 +69,9 @@ func FrontrunningWatchdog(tx *types.Transaction, client *ethclient.Client) {
 // This version of the function was uniquely used for tests purposes as I was trying to frontrun myself on PCS. Worked like a charm!
 func _handleWatchedAddressTx(tx *types.Transaction, client *ethclient.Client) {
 	sender := getTxSenderAddressQuick(tx, client)
-	fmt.Println("New transaction from ", sender, "(", global.AddressesWatched[sender].Name, ")")
+	fmt.Println("New transaction from ", sender, "(", config.AddressesWatched[sender].Name, ")")
 	var swapExactETHForTokens = [4]byte{0x7f, 0xf3, 0x6a, 0xb5}
-	if tx.To().Hex() == global.CAKE_ROUTER_ADDRESS {
+	if tx.To().Hex() == config.CAKE_ROUTER_ADDRESS {
 		txFunctionHash := [4]byte{}
 		copy(txFunctionHash[:], tx.Data()[:4])
 		if txFunctionHash == swapExactETHForTokens {
@@ -84,7 +84,7 @@ func _handleWatchedAddressTx(tx *types.Transaction, client *ethclient.Client) {
 			if Rtkn0 == nil {
 				return
 			}
-			BinaryResult = &BinarySearchResult{global.BASE_UNIT, global.BASE_UNIT, global.BASE_UNIT, Rtkn0, Rbnb0, big.NewInt(0)}
+			BinaryResult = &BinarySearchResult{config.BASE_UNIT, config.BASE_UNIT, config.BASE_UNIT, Rtkn0, Rbnb0, big.NewInt(0)}
 
 			sandwichingOnSteroid(tx, client)
 		}
@@ -95,7 +95,7 @@ func _handleWatchedAddressTx(tx *types.Transaction, client *ethclient.Client) {
 func handleWatchedAddressTx(tx *types.Transaction, client *ethclient.Client) {
 
 	sender := getTxSenderAddressQuick(tx, client)
-	fmt.Println("New transaction from ", sender, "(", global.AddressesWatched[sender].Name, ")")
+	fmt.Println("New transaction from ", sender, "(", config.AddressesWatched[sender].Name, ")")
 	fmt.Println("Nonce : ", tx.Nonce())
 	fmt.Println("GasPrice : ", formatEthWeiToEther(tx.GasPrice()))
 	fmt.Println("Gas : ", tx.Gas()*1000000000)

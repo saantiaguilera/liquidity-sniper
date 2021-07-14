@@ -1,7 +1,10 @@
 __pycache__
+scripts/__pycache__
 
 build/
 
 .idea/
+*/.DS_Store
+
 
 local.properties

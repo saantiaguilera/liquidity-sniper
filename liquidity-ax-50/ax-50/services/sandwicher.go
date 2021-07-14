@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/saantiaguilera/liquidity-AX-50/ax-50/global"
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/config"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -19,12 +19,12 @@ var START time.Time
 func sandwiching(tx *types.Transaction, client *ethclient.Client) {
 	defer _reinitAnalytics()
 	START = time.Now()
-	oldBalanceTrigger := global.GetTriggerWBNBBalance()
+	oldBalanceTrigger := config.GetTriggerWBNBBalance()
 	var FirstConfirmed = make(chan *SandwichResult, 100)
 
 	////////// SEND FRONTRUNNING TX ///////////////////
 
-	nonce, err := client.PendingNonceAt(context.Background(), global.AX_50_ACCOUNT.Address)
+	nonce, err := client.PendingNonceAt(context.Background(), config.AX_50_ACCOUNT.Address)
 	if err != nil {
 		fmt.Printf("couldn't fetch pending nonce for AX_50_ACCOUNT_ACCOUNT", err)
 	}
@@ -55,7 +55,7 @@ func sandwiching(tx *types.Transaction, client *ethclient.Client) {
 		if result.Status == 0 {
 
 			fmt.Println("frontrunning tx reverted")
-			_buildFrontrunAnalytics(tx.Hash(), signedFrontrunningTx.Hash(), global.Nullhash, client, true, true, oldBalanceTrigger, gasPriceFront)
+			_buildFrontrunAnalytics(tx.Hash(), signedFrontrunningTx.Hash(), config.Nullhash, client, true, true, oldBalanceTrigger, gasPriceFront)
 
 		} else {
 			fmt.Println("frontrunning tx successful. Sending backrunning..")

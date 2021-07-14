@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/saantiaguilera/liquidity-AX-50/ax-50/global"
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/config"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -36,7 +36,7 @@ func loadSellers(client *ethclient.Client, ctx context.Context) {
 
 	var guard sync.Mutex
 	var swarm []Seller
-	data, err := ioutil.ReadFile("./global/seller_book.json")
+	data, err := ioutil.ReadFile("./config/seller_book.json")
 	if err != nil {
 		log.Fatalln("loadSellers: cannot load seller_book.json ", err)
 	}
@@ -65,15 +65,15 @@ func loadSellers(client *ethclient.Client, ctx context.Context) {
 // prepare frontrunning tx:
 func _prepareFrontrun(nonce uint64, tx *types.Transaction, client *ethclient.Client) (*types.Transaction, *big.Int) {
 
-	to := global.TRIGGER_ADDRESS // trigger2 on mainnet
+	to := config.TRIGGER_ADDRESS // trigger2 on mainnet
 	gasLimit := uint64(700000)
 	value := big.NewInt(0)
 
 	txGasPrice := tx.GasPrice()
-	if txGasPrice.Cmp(global.STANDARD_GAS_PRICE) == -1 { // if victim's tx gas Price < 5 GWEI, abort.
+	if txGasPrice.Cmp(config.STANDARD_GAS_PRICE) == -1 { // if victim's tx gas Price < 5 GWEI, abort.
 		return nil, nil
 	}
-	gasPriceFront := big.NewInt(global.SANDWICHIN_GASPRICE_MULTIPLIER)
+	gasPriceFront := big.NewInt(config.SANDWICHIN_GASPRICE_MULTIPLIER)
 	gasPriceFront.Mul(gasPriceFront, txGasPrice)
 	gasPriceFront.Div(gasPriceFront, big.NewInt(1000000))
 
@@ -81,9 +81,9 @@ func _prepareFrontrun(nonce uint64, tx *types.Transaction, client *ethclient.Cli
 	var dataIn []byte
 	tokenOut := common.LeftPadBytes(SwapData.Token.Bytes(), 32)
 	amIn := BinaryResult.MaxBNBICanBuy
-	amIn.Sub(amIn, global.AMINMARGIN)
+	amIn.Sub(amIn, config.AMINMARGIN)
 	amountIn := common.LeftPadBytes(amIn.Bytes(), 32)
-	worstAmountOutTkn := big.NewInt(global.SANDWICHIN_MAXSLIPPAGE)
+	worstAmountOutTkn := big.NewInt(config.SANDWICHIN_MAXSLIPPAGE)
 	worstAmountOutTkn.Mul(BinaryResult.AmountTknIWillBuy, worstAmountOutTkn)
 	worstAmountOutTkn.Div(worstAmountOutTkn, big.NewInt(100000000))
 	fmt.Println("max : ", BinaryResult.AmountTknIWillBuy, "worst :", worstAmountOutTkn)
@@ -94,7 +94,7 @@ func _prepareFrontrun(nonce uint64, tx *types.Transaction, client *ethclient.Cli
 	dataIn = append(dataIn, amountOutMinIn...)
 
 	frontrunningTx := types.NewTransaction(nonce, to, value, gasLimit, gasPriceFront, dataIn)
-	signedFrontrunningTx, err := types.SignTx(frontrunningTx, types.NewEIP155Signer(global.CHAINID), global.AX_50_ACCOUNT.RawPk)
+	signedFrontrunningTx, err := types.SignTx(frontrunningTx, types.NewEIP155Signer(config.CHAINID), config.AX_50_ACCOUNT.RawPk)
 	if err != nil {
 		fmt.Println("Problem signing the frontrunning tx: ", err)
 	}
@@ -103,7 +103,7 @@ func _prepareFrontrun(nonce uint64, tx *types.Transaction, client *ethclient.Cli
 
 // prepare backrunning tx:
 func _prepareBackrun(nonce uint64, gasPrice *big.Int) *types.Transaction {
-	to := global.TRIGGER_ADDRESS
+	to := config.TRIGGER_ADDRESS
 	gasLimit := uint64(700000)
 	value := big.NewInt(0)
 	sandwichOutselector := []byte{0xd6, 0x4f, 0x65, 0x0d}
@@ -114,7 +114,7 @@ func _prepareBackrun(nonce uint64, gasPrice *big.Int) *types.Transaction {
 	dataOut = append(dataOut, tokenOut...)
 	dataOut = append(dataOut, amountOutMinOut...)
 	backrunningTx := types.NewTransaction(nonce+1, to, value, gasLimit, gasPrice, dataOut)
-	signedBackrunningTx, err := types.SignTx(backrunningTx, types.NewEIP155Signer(global.CHAINID), global.AX_50_ACCOUNT.RawPk)
+	signedBackrunningTx, err := types.SignTx(backrunningTx, types.NewEIP155Signer(config.CHAINID), config.AX_50_ACCOUNT.RawPk)
 	if err != nil {
 		fmt.Println("Problem signing the backrunning tx: ", err)
 	}
@@ -124,7 +124,7 @@ func _prepareBackrun(nonce uint64, gasPrice *big.Int) *types.Transaction {
 func _prepareSellerBackrun(client *ethclient.Client, seller *Seller, sellGasPrice *big.Int, confirmedOutTx chan *SandwichResult) {
 
 	sellerNonce := seller.PendingNonce
-	to := global.TRIGGER_ADDRESS
+	to := config.TRIGGER_ADDRESS
 	gasLimit := uint64(700000)
 	value := big.NewInt(0)
 
@@ -138,7 +138,7 @@ func _prepareSellerBackrun(client *ethclient.Client, seller *Seller, sellGasPric
 	dataOut = append(dataOut, tokenOut...)
 	dataOut = append(dataOut, amountOutMinOut...)
 	backrunningTx := types.NewTransaction(sellerNonce, to, value, gasLimit, sellGasPrice, dataOut)
-	signedBackrunningTx, err := types.SignTx(backrunningTx, types.NewEIP155Signer(global.CHAINID), seller.RawPk)
+	signedBackrunningTx, err := types.SignTx(backrunningTx, types.NewEIP155Signer(config.CHAINID), seller.RawPk)
 	if err != nil {
 		fmt.Println("Problem signing the backrunning tx: ", err)
 	}
@@ -152,8 +152,8 @@ func _prepareSellerBackrun(client *ethclient.Client, seller *Seller, sellGasPric
 
 // prepare cancel tx:
 func _prepareCancel(nonce uint64, gasPriceFront *big.Int) *types.Transaction {
-	cancelTx := types.NewTransaction(nonce, global.AX_50_ACCOUNT.Address, big.NewInt(0), 500000, gasPriceFront.Mul(gasPriceFront, big.NewInt(2)), nil)
-	signedCancelTx, err2 := types.SignTx(cancelTx, types.NewEIP155Signer(global.CHAINID), global.AX_50_ACCOUNT.RawPk)
+	cancelTx := types.NewTransaction(nonce, config.AX_50_ACCOUNT.Address, big.NewInt(0), 500000, gasPriceFront.Mul(gasPriceFront, big.NewInt(2)), nil)
+	signedCancelTx, err2 := types.SignTx(cancelTx, types.NewEIP155Signer(config.CHAINID), config.AX_50_ACCOUNT.RawPk)
 	if err2 != nil {
 		fmt.Println("Problem signing the cancel tx: ", err2)
 	}
@@ -210,7 +210,7 @@ func _buildCancelAnalytics(victimHash, cancelHash common.Hash, client *ethclient
 func _buildFrontrunAnalytics(victimHash, frontrunHash, backrunHash common.Hash, client *ethclient.Client, revertedFront, revertedBack bool, oldBalanceTrigger, gasPriceFront *big.Int) {
 	_sharedAnalytics(victimHash, client, oldBalanceTrigger)
 	realisedProfits := new(big.Int)
-	newBalanceTrigger := global.GetTriggerWBNBBalance()
+	newBalanceTrigger := config.GetTriggerWBNBBalance()
 	realisedProfits.Sub(newBalanceTrigger, oldBalanceTrigger)
 	gasPrice := formatEthWeiToEther(gasPriceFront) * 1000000000
 	var bnbSent float64
@@ -237,7 +237,7 @@ func _buildFrontrunAnalytics(victimHash, frontrunHash, backrunHash common.Hash, 
 
 func _sharedAnalytics(victimHash common.Hash, client *ethclient.Client, oldBalanceTrigger *big.Int) {
 
-	pairAddress, _ := global.FACTORY.GetPair(&bind.CallOpts{}, SwapData.Token, global.WBNB_ADDRESS)
+	pairAddress, _ := config.FACTORY.GetPair(&bind.CallOpts{}, SwapData.Token, config.WBNB_ADDRESS)
 	SharedAnalytic.TokenName = getTokenName(SwapData.Token, client)
 	SharedAnalytic.PairAddr = pairAddress
 	SharedAnalytic.TokenAddr = SwapData.Token
@@ -245,7 +245,7 @@ func _sharedAnalytics(victimHash common.Hash, client *ethclient.Client, oldBalan
 	SharedAnalytic.BalanceTriggerBefore = formatEthWeiToEther(oldBalanceTrigger)
 	SharedAnalytic.ExecTime = time.Since(START) / time.Millisecond
 	SharedAnalytic.Consolidated = false
-	newBalanceTrigger := global.GetTriggerWBNBBalance()
+	newBalanceTrigger := config.GetTriggerWBNBBalance()
 	SharedAnalytic.BalanceTriggerAfter = formatEthWeiToEther(newBalanceTrigger)
 }
 
@@ -256,7 +256,7 @@ func _reinitAnalytics() {
 func _flushAnalyticFile(structToWrite interface{}) {
 	out, _ := json.MarshalIndent(structToWrite, "", "\t")
 	// write summary of the sandwich into ./analytics.json
-	file, err := os.OpenFile("./global/analytics.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile("./config/analytics.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -272,7 +272,7 @@ func _flushAnalyticFile(structToWrite interface{}) {
 
 func _flushNewmarket(newMarket *NewMarketContent) {
 	out, _ := json.MarshalIndent(newMarket, "", "\t")
-	file, err := os.OpenFile("./global/sandwich_book_to_test.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile("./config/sandwich_book_to_test.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -287,6 +287,6 @@ func _flushNewmarket(newMarket *NewMarketContent) {
 }
 
 func showPairAddress() common.Address {
-	pairAddress, _ := global.FACTORY.GetPair(&bind.CallOpts{}, SwapData.Token, global.WBNB_ADDRESS)
+	pairAddress, _ := config.FACTORY.GetPair(&bind.CallOpts{}, SwapData.Token, config.WBNB_ADDRESS)
 	return pairAddress
 }

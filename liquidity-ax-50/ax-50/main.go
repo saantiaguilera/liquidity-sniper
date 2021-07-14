@@ -7,8 +7,8 @@ import (
 	"math/big"
 	"sync"
 
+	"github.com/saantiaguilera/liquidity-AX-50/ax-50/config"
 	"github.com/saantiaguilera/liquidity-AX-50/ax-50/contracts/erc20"
-	"github.com/saantiaguilera/liquidity-AX-50/ax-50/global"
 	"github.com/saantiaguilera/liquidity-AX-50/ax-50/services"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -19,7 +19,7 @@ import (
 )
 
 // Entry point of ax-50.
-// Before Anything, check /global/config to correctly parametrize the bot
+// Before Anything, check /config/config to correctly parametrize the bot
 
 var wg = sync.WaitGroup{}
 var TopSnipe = make(chan *big.Int)
@@ -58,16 +58,16 @@ func StreamNewTxs(client *ethclient.Client, rpcClient *rpc.Client) {
 	fmt.Println("\nSubscribed to mempool txs!\n")
 
 	fmt.Println("\n////////////// BIG TRANSFERS //////////////////\n")
-	if global.BIG_BNB_TRANSFER == true {
-		fmt.Println("activated\nthreshold of interest : transfers >", global.BNB[:2], " BNB")
+	if config.BIG_BNB_TRANSFER == true {
+		fmt.Println("activated\nthreshold of interest : transfers >", config.BNB[:2], " BNB")
 	} else {
 		fmt.Println("not activated")
 	}
 
 	fmt.Println("\n////////////// ADDRESS MONITORING //////////////////\n")
-	if global.ADDRESS_MONITOR == true {
+	if config.ADDRESS_MONITOR == true {
 		fmt.Println("activated\nthe following addresses are monitored : \n")
-		for addy, addressData := range global.AddressesWatched {
+		for addy, addressData := range config.AddressesWatched {
 			fmt.Println("address : ", addy, "name: ", addressData.Name)
 		}
 	} else {
@@ -75,15 +75,15 @@ func StreamNewTxs(client *ethclient.Client, rpcClient *rpc.Client) {
 	}
 
 	fmt.Println("\n////////////// SANDWICHER //////////////////\n")
-	if global.Sandwicher == true {
-		fmt.Println("activated\n\nmax BNB amount authorised for one sandwich : ", global.Sandwicher_maxbound, "WBNB")
-		fmt.Println("minimum profit expected : ", global.Sandwicher_minprofit, "WBNB")
-		fmt.Println("current WBNB balance inside TRIGGER : ", formatEthWeiToEther(global.GetTriggerWBNBBalance()), "WBNB")
-		fmt.Println("TRIGGER balance at which we stop execution : ", formatEthWeiToEther(global.STOPLOSSBALANCE), "WBNB")
+	if config.Sandwicher == true {
+		fmt.Println("activated\n\nmax BNB amount authorised for one sandwich : ", config.Sandwicher_maxbound, "WBNB")
+		fmt.Println("minimum profit expected : ", config.Sandwicher_minprofit, "WBNB")
+		fmt.Println("current WBNB balance inside TRIGGER : ", formatEthWeiToEther(config.GetTriggerWBNBBalance()), "WBNB")
+		fmt.Println("TRIGGER balance at which we stop execution : ", formatEthWeiToEther(config.STOPLOSSBALANCE), "WBNB")
 		fmt.Println("WARNING: be sure TRIGGER WBNB balance is > SANDWICHER MAXBOUND !!")
 
 		activeMarkets := 0
-		for _, specs := range global.SANDWICH_BOOK {
+		for _, specs := range config.SANDWICH_BOOK {
 			if specs.Whitelisted == true && specs.ManuallyDisabled == false {
 				// fmt.Println(specs.Name, market, specs.Liquidity)
 				activeMarkets += 1
@@ -92,13 +92,13 @@ func StreamNewTxs(client *ethclient.Client, rpcClient *rpc.Client) {
 		fmt.Println("\nNumber of active Markets: ", activeMarkets, "\n")
 
 		fmt.Println("\nManually disabled Markets: \n")
-		for market, specs := range global.SANDWICH_BOOK {
+		for market, specs := range config.SANDWICH_BOOK {
 			if specs.ManuallyDisabled == true {
 				fmt.Println(specs.Name, market, specs.Liquidity)
 			}
 		}
 		fmt.Println("\nEnnemies: \n")
-		for ennemy := range global.ENNEMIES {
+		for ennemy := range config.ENNEMIES {
 			fmt.Println(ennemy)
 		}
 
@@ -107,12 +107,12 @@ func StreamNewTxs(client *ethclient.Client, rpcClient *rpc.Client) {
 	}
 
 	fmt.Println("\n////////////// LIQUIDITY SNIPING //////////////////\n")
-	if global.Sniping == true {
+	if config.Sniping == true {
 		fmt.Println("activated")
-		name, _ := global.Snipe.Tkn.Name(&bind.CallOpts{})
-		fmt.Println("token targetted: ", global.Snipe.TokenAddress, "(", name, ")")
-		fmt.Println("minimum liquidity expected : ", formatEthWeiToEther(global.Snipe.MinLiq), getTokenSymbol(global.Snipe.TokenPaired, client))
-		fmt.Println("current WBNB balance inside TRIGGER : ", formatEthWeiToEther(global.GetTriggerWBNBBalance()), "WBNB")
+		name, _ := config.Snipe.Tkn.Name(&bind.CallOpts{})
+		fmt.Println("token targetted: ", config.Snipe.TokenAddress, "(", name, ")")
+		fmt.Println("minimum liquidity expected : ", formatEthWeiToEther(config.Snipe.MinLiq), getTokenSymbol(config.Snipe.TokenPaired, client))
+		fmt.Println("current WBNB balance inside TRIGGER : ", formatEthWeiToEther(config.GetTriggerWBNBBalance()), "WBNB")
 
 	} else {
 		fmt.Println("not activated")
@@ -148,10 +148,10 @@ func main() {
 	rpcClient := services.InitRPCClient(ClientEntered)
 	client := services.GetCurrentClient()
 
-	global.InitDF(client)
+	config.InitDF(client)
 
-	// init goroutine Clogg if global.Sniping == true
-	if global.Sniping == true {
+	// init goroutine Clogg if config.Sniping == true
+	if config.Sniping == true {
 		wg.Add(1)
 		go func() {
 			services.Clogg(client, TopSnipe)

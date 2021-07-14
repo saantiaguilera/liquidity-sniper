@@ -34,13 +34,13 @@ BUSD_ADDRESS = "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56"
 TEST = False
 BEEROUNDS = 4 # swarming : number of dispersion rounds 
 BEENUMBERBNB = 1 # swarming : number of BNB to spread
-BEEBOOKPATH  = "./dark_forester/global/bee_book.json"
-BEEBOOKTEMPPATH = "./dark_forester/global/bee_book_temp.json"
+BEEBOOKPATH  = "./ax-50/config/bee_book.json"
+BEEBOOKTEMPPATH = "./ax-50/config/bee_book_temp.json"
 
 SELLERROUNDS = 3
 SELLERNUMBERBNB = 1
-SELLERBOOKPATH = "./dark_forester/global/seller_book.json"
-SELLERBOOKTEMPPATH = "./dark_forester/global/seller_book_temp.json"
+SELLERBOOKPATH = "./ax-50/config/seller_book.json"
+SELLERBOOKTEMPPATH = "./ax-50/config/seller_book_temp.json"
 
 #///////////// SNIPE VARIABLES ///////////////////////////////
 

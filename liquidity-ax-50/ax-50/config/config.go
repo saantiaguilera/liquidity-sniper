@@ -1,4 +1,4 @@
-package global
+package config
 
 import (
 	"bufio"
@@ -18,8 +18,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
-
-///////// DARK FORESTER ACCOUNT //////////
 
 // Dark forester account is the account that owns the Trigger and SandwichRouter contracts and can configure it beforehand.
 // It is also the dest account for the sniped tokens.
@@ -42,7 +40,7 @@ var Nullhash = common.HexToHash("0x000000000000000000000000000000000000000000000
 
 ///////// OTHER CONFIGS //////////
 
-// Allows monitoring of tx comming from and to a list of monitored addresses defined in global/address_list.json
+// Allows monitoring of tx comming from and to a list of monitored addresses defined in config/address_list.json
 var ADDRESS_MONITOR bool = false
 
 // Allows monitoring of any big BNB transfers on BSC
@@ -241,7 +239,7 @@ func _initSandwicher() {
 	}
 
 	// load sandwich_book:
-	data, err := ioutil.ReadFile("./global/sandwich_book.json")
+	data, err := ioutil.ReadFile("./config/sandwich_book.json")
 	if err != nil {
 		log.Fatalln("cannot load sandwich_book.json", err)
 	}
@@ -252,13 +250,13 @@ func _initSandwicher() {
 	for market := range SANDWICH_BOOK {
 		IN_SANDWICH_BOOK[market] = true
 	}
-	file, _ := os.Create("./global/sandwich_book_to_test.json")
+	file, _ := os.Create("./config/sandwich_book_to_test.json")
 	writer := bufio.NewWriter(file)
 	_, err = writer.WriteString("[\n")
 	writer.Flush()
 
 	//load ennemy book
-	data, err = ioutil.ReadFile("./global/ennemy_book.json")
+	data, err = ioutil.ReadFile("./config/ennemy_book.json")
 	if err != nil {
 		log.Fatalln("cannot load ennemy_book.json", err)
 	}
@@ -306,7 +304,7 @@ func InitDF(client *ethclient.Client) {
 	// INITIALISE ADDRESS_MONITOR
 	if ADDRESS_MONITOR == true {
 		var AddressList []Address
-		data, err := ioutil.ReadFile("./global/address_list.json")
+		data, err := ioutil.ReadFile("./config/address_list.json")
 		if err != nil {
 			log.Fatalln("cannot load address_list.json", err)
 		}
