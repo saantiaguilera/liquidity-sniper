@@ -1,11 +1,10 @@
 package config
 
 import (
-	"crypto/ecdsa"
 	"encoding/json"
 	"fmt"
 	erc202 "github.com/saantiaguilera/liquidity-ax-50/third_party/erc20"
-	uniswap2 "github.com/saantiaguilera/liquidity-ax-50/third_party/uniswap"
+	"github.com/saantiaguilera/liquidity-ax-50/third_party/pancake"
 	"io/ioutil"
 	"log"
 	"math/big"
@@ -29,7 +28,7 @@ var BUSD_ADDRESS = common.HexToAddress("0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D
 var CAKE_FACTORY_ADDRESS = common.HexToAddress("0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73")
 var CAKE_ROUTER_ADDRESS = "0x10ED43C718714eb63d5aA57B78B54704E256024E"
 var WBNBERC20 *erc202.Erc20
-var FACTORY *uniswap2.IPancakeFactory
+var FACTORY *pancake.IPancakeFactory
 var CHAINID = big.NewInt(56)
 var STANDARD_GAS_PRICE = big.NewInt(5000000000) // 5 GWEI
 var Nullhash = common.HexToHash("0x0000000000000000000000000000000000000000000000000000000000000000")
@@ -94,7 +93,7 @@ func _initConst(client *ethclient.Client) {
 	}
 	AX_50_ACCOUNT.RawPk = rawPk
 
-	factory, err := uniswap2.NewIPancakeFactory(CAKE_FACTORY_ADDRESS, client)
+	factory, err := pancake.NewIPancakeFactory(CAKE_FACTORY_ADDRESS, client)
 	if err != nil {
 		log.Fatalln("InitFilters: couldn't embed FACTORY: ", err)
 	}
