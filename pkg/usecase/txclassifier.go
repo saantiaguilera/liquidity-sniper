@@ -27,6 +27,20 @@ type (
 	transactionClassifierStrategy func(ctx context.Context, tx *types.Transaction) error
 )
 
+func NewTransactionClassifier(
+	raddr string,
+	m transactionClassifierMonitor,
+	s map[[4]byte]transactionClassifierStrategy,
+) *TransactionClassifier {
+
+	return &TransactionClassifier{
+		mut:        new(sync.Mutex),
+		routerAddr: raddr,
+		monitor:    m,
+		strategies: s,
+	}
+}
+
 func (u *TransactionClassifier) Classify(ctx context.Context, tx *types.Transaction) error {
 	if tx.To() == nil {
 		return domain.ErrTxIsContract
@@ -35,7 +49,7 @@ func (u *TransactionClassifier) Classify(ctx context.Context, tx *types.Transact
 	u.monitor(ctx, tx)
 
 	if tx.To().Hex() == u.routerAddr && len(tx.Data()) >= 4 {
-		u.mut.Lock()
+		u.mut.Lock() // TODO Check need. I think the sniper service already handles these lock.
 		defer u.mut.Unlock()
 
 		txFunctionHash := [4]byte{}

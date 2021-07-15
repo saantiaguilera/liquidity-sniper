@@ -9,10 +9,10 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
-	config2 "github.com/saantiaguilera/liquidity-ax-50/config"
 	"github.com/saantiaguilera/liquidity-ax-50/pkg/domain"
 	erc202 "github.com/saantiaguilera/liquidity-ax-50/third_party/erc20"
 	"math/big"
+	"runtime/debug"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -30,10 +30,11 @@ type (
 
 		factoryClient sniperFactoryClient // eg. PCS
 		ethClient sniperETHClient
-		swarm []*bee
+		swarm []*Bee
 
-		sniperTTBAddr     common.Address // domain.Sniper.AddressTargetToken
-		sniperTriggerAddr common.Address // domain.Sniper.AddressTrigger
+		sniperTTBAddr     common.Address
+		sniperTriggerAddr common.Address
+		sniperTokenPaired common.Address
 		sniperChainID     *big.Int
 	}
 
@@ -50,11 +51,11 @@ type (
 		TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error)
 	}
 
-	bee struct {
-		Idx          int
+	Bee struct {
+		ID           int
 		Address      common.Address
-		Pk           string
-		RawPk        *ecdsa.PrivateKey
+		PK           string
+		RawPK        *ecdsa.PrivateKey
 		Balance      float64
 		PendingNonce uint64
 		GasPrice     big.Int
@@ -67,6 +68,48 @@ type (
 	}
 )
 
+// TODO Here we use loadClogger() to create bees/swarm
+func NewSniper(
+	e sniperETHClient,
+	f sniperFactoryClient,
+	s []*Bee,
+	sn domain.Sniper,
+) *Sniper {
+
+	p := int32(0)
+	return &Sniper{
+		park:              &p,
+		ethClient:         e,
+		factoryClient:     f,
+		swarm:             s,
+		sniperTTBAddr:     common.HexToAddress(sn.AddressTargetToken),
+		sniperTriggerAddr: common.HexToAddress(sn.AddressTrigger),
+		sniperTokenPaired: common.HexToAddress(sn.AddressBaseCurrency),
+		sniperChainID:     sn.ChainID,
+	}
+}
+
+func NewBee(
+	id int,
+	addr common.Address,
+	pk string,
+	rawPK *ecdsa.PrivateKey,
+	balance float64,
+	pn uint64,
+	gp big.Int,
+) *Bee {
+
+	return &Bee{
+		ID:           id,
+		Address:      addr,
+		PK:           pk,
+		RawPK:        rawPK,
+		Balance:      balance,
+		PendingNonce: pn,
+		GasPrice:     gp,
+	}
+}
+
 func (c *Sniper) Snipe(ctx context.Context, gas *big.Int) error {
 	if atomic.CompareAndSwapInt32(c.park, 0, 1) {
 		defer atomic.SwapInt32(c.park, 0) // compensate always.
@@ -77,7 +120,8 @@ func (c *Sniper) Snipe(ctx context.Context, gas *big.Int) error {
 		pendingTxRes := make(chan common.Hash, len(c.swarm))
 
 		for _, b := range c.swarm {
-			go func(ctx context.Context, b *bee, wg *sync.WaitGroup, gas *big.Int, h chan<- common.Hash) {
+			go func(ctx context.Context, b *Bee, wg *sync.WaitGroup, gas *big.Int, h chan<- common.Hash) {
+				defer recovery()
 				defer wg.Done()
 				h <- c.execute(ctx, b, gas)
 			}(ctx, b, wg, gas, pendingTxRes)
@@ -93,6 +137,7 @@ func (c *Sniper) Snipe(ctx context.Context, gas *big.Int) error {
 
 		for txHash := range pendingTxRes {
 			go func(ctx context.Context, h common.Hash, wg *sync.WaitGroup, ch chan<- txRes) {
+				defer recovery()
 				defer wg.Done()
 				ch <- c.checkTxStatus(ctx, h)
 			}(ctx, txHash, wg, finishedTxRes)
@@ -109,13 +154,13 @@ func (c *Sniper) Snipe(ctx context.Context, gas *big.Int) error {
 						hexAmount := hex.EncodeToString(l.Data)
 						var value = new(big.Int)
 						value.SetString(hexAmount, 16)
-						amountBought, err := c.formatERC20Decimals(value, config2.Snipe.TokenAddress)
+						amountBought, err := c.formatERC20Decimals(value, c.sniperTTBAddr)
 						if err != nil {
 							log.Info(fmt.Sprintf("sniping succeeded! but we couldn't get the bought balance: %s", err))
 							continue
 						}
 
-						pairAddress, err := c.factoryClient.GetPair(&bind.CallOpts{}, config2.Snipe.TokenAddress, config2.WBNB_ADDRESS)
+						pairAddress, err := c.factoryClient.GetPair(&bind.CallOpts{}, c.sniperTTBAddr, c.sniperTokenPaired)
 						if err != nil {
 							log.Info(fmt.Sprintf("sniping succeeded! but we couldn't get the pair bought: %s", err))
 							continue
@@ -205,20 +250,19 @@ func (c *Sniper) checkTxStatus(ctx context.Context, txHash common.Hash) txRes {
 	}
 }
 
-func (c *Sniper) execute(ctx context.Context, bee *bee, gasPrice *big.Int) common.Hash {
-
-	beeCtx, _ := context.WithCancel(ctx)
+func (c *Sniper) execute(ctx context.Context, bee *Bee, gasPrice *big.Int) common.Hash {
 	nonce := bee.PendingNonce
 	// create the tx
 	txBee := types.NewTransaction(nonce, c.sniperTriggerAddr, txValue, txGasLimit, gasPrice, triggerSmartContract)
 	// sign the tx
-	signedTxBee, err := types.SignTx(txBee, types.NewEIP155Signer(c.sniperChainID), bee.RawPk)
+	signedTxBee, err := types.SignTx(txBee, types.NewEIP155Signer(c.sniperChainID), bee.RawPK)
 	if err != nil {
-		fmt.Println("sendBee: problem with signedTxBee : ", err)
+		log.Info(fmt.Sprintf("sendBee: problem with signedTxBee: %s", err))
 	}
 
 	// send the tx
-	err = c.ethClient.SendTransaction(beeCtx, signedTxBee)
+	// TODO Ctx timeout?
+	err = c.ethClient.SendTransaction(ctx, signedTxBee)
 
 	if err != nil {
 		log.Info(fmt.Sprintf("error sending tx: %s", err.Error()))
@@ -226,4 +270,10 @@ func (c *Sniper) execute(ctx context.Context, bee *bee, gasPrice *big.Int) commo
 	}
 	log.Info(fmt.Sprintf("sent tx: %s", signedTxBee.Hash().Hex()))
 	return signedTxBee.Hash()
+}
+
+func recovery() {
+	if err := recover(); err != nil {
+		log.Error(fmt.Sprintf("panic recovered: %s %s", fmt.Errorf("%s", err), debug.Stack()))
+	}
 }

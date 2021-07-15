@@ -7,23 +7,24 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
-	erc202 "github.com/saantiaguilera/liquidity-ax-50/third_party/erc20"
+	"github.com/saantiaguilera/liquidity-ax-50/pkg/domain"
+	"github.com/saantiaguilera/liquidity-ax-50/third_party/erc20"
 	"math/big"
 )
 
 type (
 	UniswapLiquidity struct {
-		ethClient uniswapLiquidityEthClient
+		ethClient    uniswapLiquidityETHClient
 		sniperClient uniswapLiquiditySniperClient
 
-		sniperTTBAddr     common.Address // domain.Sniper.AddressTargetToken
-		sniperTTBTkn      *erc202.Erc20  // domain.Sniper.AddressTargetToken
-		sniperTokenPaired common.Address // domain.Sniper.AddressBaseCurrency
-		sniperMinLiq      *big.Int            // domain.Sniper.MinLiq?? however it was named
+		sniperTTBAddr     common.Address
+		sniperTTBTkn      *erc20.Erc20
+		sniperTokenPaired common.Address
+		sniperMinLiq      *big.Int
 		sniperChainID     *big.Int
 	}
 
-	uniswapLiquidityEthClient interface {
+	uniswapLiquidityETHClient interface {
 		bind.ContractBackend
 
 		NetworkID(context.Context) (*big.Int, error)
@@ -53,6 +54,30 @@ type (
 		To                 common.Address
 	}
 )
+
+func NewUniswapLiquidity(
+	e uniswapLiquidityETHClient,
+	s uniswapLiquiditySniperClient,
+	sn domain.Sniper,
+) (*UniswapLiquidity, error) {
+
+	ttb := common.HexToAddress(sn.AddressTargetToken)
+	ttbTkn, err := erc20.NewErc20(ttb, e)
+	if err != nil {
+		return nil, err
+	}
+	tp := common.HexToAddress(sn.AddressBaseCurrency)
+
+	return &UniswapLiquidity{
+		ethClient:         e,
+		sniperClient:      s,
+		sniperTTBAddr:     ttb,
+		sniperTTBTkn:      ttbTkn,
+		sniperTokenPaired: tp,
+		sniperMinLiq:      sn.MinimumLiquidity,
+		sniperChainID:     sn.ChainID,
+	}, nil
+}
 
 func (u *UniswapLiquidity) newInputFromTx(tx *types.Transaction) uniswapAddLiquidityInput {
 	data := tx.Data()[4:]
@@ -90,8 +115,8 @@ func (u *UniswapLiquidity) newETHInputFromTx(tx *types.Transaction) uniswapAddLi
 	amountTokenDesired.SetString(common.Bytes2Hex(data[32:64]), 16)
 	var amountTokenMin = new(big.Int)
 	amountTokenMin.SetString(common.Bytes2Hex(data[64:96]), 16)
-	var amountEthMin = new(big.Int)
-	amountEthMin.SetString(common.Bytes2Hex(data[96:128]), 16)
+	var amountETHMin = new(big.Int)
+	amountETHMin.SetString(common.Bytes2Hex(data[96:128]), 16)
 
 	to := common.BytesToAddress(data[140:160])
 	var deadline = new(big.Int)
@@ -100,7 +125,7 @@ func (u *UniswapLiquidity) newETHInputFromTx(tx *types.Transaction) uniswapAddLi
 	return uniswapAddLiquidityETHInput{
 		TokenAddress: token,
 		AmountTokenDesired: amountTokenDesired,
-		AmountETHMin: amountEthMin,
+		AmountETHMin: amountETHMin,
 		AmountTokenMin: amountTokenMin,
 		Deadline: deadline,
 		To: to,
@@ -119,19 +144,8 @@ func (u *UniswapLiquidity) getTxSenderAddressQuick(tx *types.Transaction) (commo
 	return msg.From(), nil
 }
 
-func (u *UniswapLiquidity) formatEthWeiToEther(etherAmount *big.Int) float64 {
-	var base, exponent = big.NewInt(10), big.NewInt(18)
-	denominator := base.Exp(base, exponent, nil)
-	// Convert to float for precision
-	tokensSentFloat := new(big.Float).SetInt(etherAmount)
-	denominatorFloat := new(big.Float).SetInt(denominator)
-	// Divide and return the final result
-	final, _ := new(big.Float).Quo(tokensSentFloat, denominatorFloat).Float64()
-	return final
-}
-
 func (u *UniswapLiquidity) getTokenSymbol(tokenAddress common.Address) string {
-	tokenIntance, _ := erc202.NewErc20(tokenAddress, u.ethClient)
+	tokenIntance, _ := erc20.NewErc20(tokenAddress, u.ethClient)
 	sym, err := tokenIntance.Symbol(nil)
 	if err != nil {
 		return err.Error()
@@ -176,9 +190,9 @@ func (u *UniswapLiquidity) Add(ctx context.Context, tx *types.Transaction) error
 				} else {
 					log.Info(fmt.Sprintf(
 						"liquidity added but lower than expected: %.4f %s vs %.4f expected",
-						u.formatEthWeiToEther(amountPairedMin),
+						formatETHWeiToEther(amountPairedMin),
 						u.getTokenSymbol(u.sniperTokenPaired),
-						u.formatEthWeiToEther(u.sniperMinLiq),
+						formatETHWeiToEther(u.sniperMinLiq),
 					))
 				}
 			}
@@ -218,11 +232,22 @@ func (u *UniswapLiquidity) AddETH(ctx context.Context, tx *types.Transaction) er
 			} else {
 				log.Info(fmt.Sprintf(
 					"liquidity network (BNB/ETH?) added but lower than expected: %.4f vs %.4f expected",
-					u.formatEthWeiToEther(tx.Value()),
-					u.formatEthWeiToEther(u.sniperMinLiq),
+					formatETHWeiToEther(tx.Value()),
+					formatETHWeiToEther(u.sniperMinLiq),
 				))
 			}
 		}
 	}
 	return nil
+}
+
+func formatETHWeiToEther(etherAmount *big.Int) float64 {
+	var base, exponent = big.NewInt(10), big.NewInt(18)
+	denominator := base.Exp(base, exponent, nil)
+	// Convert to float for precision
+	tokensSentFloat := new(big.Float).SetInt(etherAmount)
+	denominatorFloat := new(big.Float).SetInt(denominator)
+	// Divide and return the final result
+	final, _ := new(big.Float).Quo(tokensSentFloat, denominatorFloat).Float64()
+	return final
 }

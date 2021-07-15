@@ -21,7 +21,7 @@ type (
 	transactionHandler func(context.Context, *types.Transaction) error
 )
 
-func (c *Transaction) Consume(h common.Hash) error {
+func (c *Transaction) Snipe(h common.Hash) error {
 	ctx := context.Background() // TODO: Add timeout.
 
 	// Get transaction object from hash by querying the client

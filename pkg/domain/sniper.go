@@ -17,6 +17,8 @@ type (
 		// It's an important question to solve in the telegram of the project.
 		// You can also monitor bscscan and see the repartition of WBNB among the address that holds the targeted token
 		// and deduce the WBNB liq that will be added.
-		MinimumLiquidity int
+		MinimumLiquidity *big.Int
+		// ChainID of the network
+		ChainID *big.Int
 	}
 )
