@@ -3,11 +3,13 @@ package service
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
-	"github.com/saantiaguilera/liquidity-ax-50/pkg/domain"
-	"math/big"
+
+	"github.com/saantiaguilera/liquidity-AX-50/pkg/domain"
 )
 
 const (
@@ -42,11 +44,11 @@ func (m *AddressMonitor) Monitor(ctx context.Context, tx *types.Transaction) {
 
 	if na, ok := m.watchedAddrs[owner]; ok {
 		log.Info(fmt.Sprintf(
-`[AddressMonitor] New transaction from %s (%s)
+			`[AddressMonitor] New transaction from %s (%s)
     Nonce: %d
-    GasPrice: %d
+    GasPrice: %.4f
     Gas: %d
-    Value: %d
+    Value: %.4f
     To: %s
     Hash: %s`,
 			owner, na.Name, tx.Nonce(), formatETHWeiToEther(tx.GasPrice()), tx.Gas()*addressMonitorGasMul,

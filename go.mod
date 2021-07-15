@@ -1,4 +1,4 @@
-module github.com/saantiaguilera/liquidity-AX-50/ax-50
+module github.com/saantiaguilera/liquidity-AX-50
 
 go 1.16
 

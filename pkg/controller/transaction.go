@@ -2,9 +2,11 @@ package controller
 
 import (
 	"context"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/saantiaguilera/liquidity-ax-50/pkg/domain"
+
+	"github.com/saantiaguilera/liquidity-AX-50/pkg/domain"
 )
 
 type (
@@ -28,10 +30,7 @@ func NewTransaction(resolver transactionResolver, handler transactionHandler) *T
 	}
 }
 
-
-func (c *Transaction) Snipe(h common.Hash) error {
-	ctx := context.Background() // TODO: Add timeout.
-
+func (c *Transaction) Snipe(ctx context.Context, h common.Hash) error {
 	// Get transaction object from hash by querying the client
 	tx, pending, err := c.resolver.TransactionByHash(context.Background(), h)
 

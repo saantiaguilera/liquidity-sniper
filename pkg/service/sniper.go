@@ -5,17 +5,19 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/saantiaguilera/liquidity-ax-50/pkg/domain"
-	erc202 "github.com/saantiaguilera/liquidity-ax-50/third_party/erc20"
 	"math/big"
 	"runtime/debug"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/log"
+
+	"github.com/saantiaguilera/liquidity-AX-50/pkg/domain"
+	erc202 "github.com/saantiaguilera/liquidity-AX-50/third_party/erc20"
 )
 
 const (
@@ -33,8 +35,8 @@ type (
 		park *int32
 
 		factoryClient sniperFactoryClient // eg. PCS
-		ethClient sniperETHClient
-		swarm []*Bee
+		ethClient     sniperETHClient
+		swarm         []*Bee
 
 		sniperTTBAddr     common.Address
 		sniperTriggerAddr common.Address
@@ -56,17 +58,12 @@ type (
 	}
 
 	Bee struct {
-		ID           int
-		Address      common.Address
-		PK           string
 		RawPK        *ecdsa.PrivateKey
-		Balance      float64
 		PendingNonce uint64
-		GasPrice     big.Int
 	}
 
 	txRes struct {
-		Hash   common.Hash
+		Hash    common.Hash
 		Receipt *types.Receipt
 		Success bool
 	}
@@ -94,23 +91,13 @@ func NewSniper(
 }
 
 func NewBee(
-	id int,
-	addr common.Address,
-	pk string,
 	rawPK *ecdsa.PrivateKey,
-	balance float64,
 	pn uint64,
-	gp big.Int,
 ) *Bee {
 
 	return &Bee{
-		ID:           id,
-		Address:      addr,
-		PK:           pk,
 		RawPK:        rawPK,
-		Balance:      balance,
 		PendingNonce: pn,
-		GasPrice:     gp,
 	}
 }
 
@@ -209,7 +196,7 @@ func (c *Sniper) formatERC20Decimals(tokensSent *big.Int, tokenAddress common.Ad
 // once all tx has been sent, check for status and feed StatusResults and WatchPending chan that are listening
 func (c *Sniper) checkTxStatus(ctx context.Context, txHash common.Hash) txRes {
 
-	t := time.NewTicker(500*time.Millisecond)
+	t := time.NewTicker(500 * time.Millisecond)
 	defer t.Stop()
 
 	s := time.Now()
@@ -227,9 +214,9 @@ func (c *Sniper) checkTxStatus(ctx context.Context, txHash common.Hash) txRes {
 
 		// fail fast after 5s
 		// TODO Use ctx?
-		if time.Now().Add(-5*time.Second).After(s) {
+		if time.Now().Add(-5 * time.Second).After(s) {
 			return txRes{
-				Hash: txHash,
+				Hash:    txHash,
 				Success: false,
 				Receipt: nil,
 			}
@@ -241,14 +228,14 @@ func (c *Sniper) checkTxStatus(ctx context.Context, txHash common.Hash) txRes {
 	if err != nil {
 		log.Info(err.Error())
 		return txRes{
-			Hash: txHash,
+			Hash:    txHash,
 			Success: false,
 			Receipt: nil,
 		}
 	}
 
 	return txRes{
-		Hash:   txHash,
+		Hash:    txHash,
 		Success: receipt.Status == 1,
 		Receipt: receipt,
 	}

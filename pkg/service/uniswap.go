@@ -3,13 +3,15 @@ package service
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
-	"github.com/saantiaguilera/liquidity-ax-50/pkg/domain"
-	"github.com/saantiaguilera/liquidity-ax-50/third_party/erc20"
-	"math/big"
+
+	"github.com/saantiaguilera/liquidity-AX-50/pkg/domain"
+	"github.com/saantiaguilera/liquidity-AX-50/third_party/erc20"
 )
 
 type (
@@ -107,7 +109,6 @@ func (u *UniswapLiquidity) newInputFromTx(tx *types.Transaction) uniswapAddLiqui
 	}
 }
 
-
 func (u *UniswapLiquidity) newETHInputFromTx(tx *types.Transaction) uniswapAddLiquidityETHInput {
 	data := tx.Data()[4:]
 	token := common.BytesToAddress(data[12:32])
@@ -123,12 +124,12 @@ func (u *UniswapLiquidity) newETHInputFromTx(tx *types.Transaction) uniswapAddLi
 	deadline.SetString(common.Bytes2Hex(data[160:192]), 16)
 
 	return uniswapAddLiquidityETHInput{
-		TokenAddress: token,
+		TokenAddress:       token,
 		AmountTokenDesired: amountTokenDesired,
-		AmountETHMin: amountETHMin,
-		AmountTokenMin: amountTokenMin,
-		Deadline: deadline,
-		To: to,
+		AmountETHMin:       amountETHMin,
+		AmountTokenMin:     amountTokenMin,
+		Deadline:           deadline,
+		To:                 to,
 	}
 }
 

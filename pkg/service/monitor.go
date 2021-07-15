@@ -2,19 +2,20 @@ package service
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/core/types"
 	"sync"
 	"time"
+
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 const (
-	workers = 100
+	workers  = 100
 	interval = 1 * time.Second
 )
 
 type (
 	MonitorEngine struct {
-		monitors []monitor
+		monitors []Monitor
 
 		t *time.Ticker
 
@@ -22,17 +23,15 @@ type (
 		mut *sync.Mutex
 	}
 
-	monitor interface {
-		Monitor(context.Context, *types.Transaction)
-	}
+	Monitor func(context.Context, *types.Transaction)
 
 	entry struct {
 		ctx context.Context
-		tx *types.Transaction
+		tx  *types.Transaction
 	}
 )
 
-func NewMonitorEngine(m ...monitor) *MonitorEngine {
+func NewMonitorEngine(m ...Monitor) *MonitorEngine {
 	e := &MonitorEngine{
 		monitors: m,
 		buf:      make([]entry, 0),
@@ -73,11 +72,11 @@ func (e *MonitorEngine) monitorPendings() {
 	close(ch)
 
 	for i := 0; i < w; i++ {
-		go func(ch chan<- entry) {
+		go func(ch <-chan entry) {
 			defer recovery()
 			for entr := range ch {
 				for _, m := range e.monitors {
-					m.Monitor(entr.ctx, entr.tx)
+					m(entr.ctx, entr.tx)
 				}
 			}
 		}(ch)

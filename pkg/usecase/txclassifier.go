@@ -2,15 +2,11 @@ package usecase
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/saantiaguilera/liquidity-ax-50/pkg/domain"
 	"sync"
-)
 
-var (
-	// TODO Use for strategy mapping!
-	addLiquidityETH = [...]byte{0xf3, 0x05, 0xd7, 0x19}
-	addLiquidity = [...]byte{0xe8, 0xe3, 0x37, 0x00}
+	"github.com/ethereum/go-ethereum/core/types"
+
+	"github.com/saantiaguilera/liquidity-AX-50/pkg/domain"
 )
 
 type (
@@ -19,18 +15,18 @@ type (
 
 		routerAddr string
 
-		monitor transactionClassifierMonitor
-		strategies map[[4]byte]transactionClassifierStrategy
+		monitor    transactionClassifierMonitor
+		strategies map[[4]byte]TransactionClassifierStrategy
 	}
 
-	transactionClassifierMonitor func(ctx context.Context, tx *types.Transaction)
-	transactionClassifierStrategy func(ctx context.Context, tx *types.Transaction) error
+	transactionClassifierMonitor  func(ctx context.Context, tx *types.Transaction)
+	TransactionClassifierStrategy func(ctx context.Context, tx *types.Transaction) error
 )
 
 func NewTransactionClassifier(
 	raddr string,
 	m transactionClassifierMonitor,
-	s map[[4]byte]transactionClassifierStrategy,
+	s map[[4]byte]TransactionClassifierStrategy,
 ) *TransactionClassifier {
 
 	return &TransactionClassifier{
@@ -45,6 +41,8 @@ func (u *TransactionClassifier) Classify(ctx context.Context, tx *types.Transact
 	if tx.To() == nil {
 		return domain.ErrTxIsContract
 	}
+
+	//TODO: is calling sender() here needed?
 
 	u.monitor(ctx, tx)
 

@@ -3,14 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	"os"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 const (
-	AddressBNB AddressName = "bnb"
-	AddressBUSD AddressName = "busd"
-	AddressCakeRouter AddressName = "cake_router"
+	AddressCakeRouter  AddressName = "cake_router"
 	AddressCakeFactory AddressName = "cake_factory"
 )
 
@@ -19,16 +18,16 @@ type (
 
 	Config struct {
 		Addresses map[string]string `json:"addresses"`
-		Sniper  Sniper `json:"sniper"`
-		Monitors Monitors `json:"monitors"`
+		Sniper    Sniper            `json:"sniper"`
+		Monitors  Monitors          `json:"monitors"`
 	}
 
 	Sniper struct {
-		Trigger string `json:"trigger"`
+		Trigger      string `json:"trigger"`
 		BaseCurrency string `json:"base_currency"`
-		TargetToken string `json:"target_token"`
-		MinLiquidity int `json:"minimum_liquidity"`
-		RPC string `json:"rpc"`
+		TargetToken  string `json:"target_token"`
+		MinLiquidity int    `json:"minimum_liquidity"`
+		RPC          string `json:"rpc"`
 	}
 
 	Monitors struct {
@@ -37,8 +36,8 @@ type (
 	}
 
 	AddressListMonitor struct {
-		Enabled bool `json:"enabled"`
-		List []AddressListEntry `json:"list"`
+		Enabled bool               `json:"enabled"`
+		List    []AddressListEntry `json:"list"`
 	}
 
 	AddressListEntry struct {
@@ -47,8 +46,8 @@ type (
 	}
 
 	WhaleMonitor struct {
-		Enabled bool `json:"enabled"`
-		Min     int `json:"min"`
+		Enabled bool   `json:"enabled"`
+		Min     string `json:"min"`
 	}
 )
 
