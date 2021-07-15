@@ -69,7 +69,6 @@ type (
 	}
 )
 
-// TODO Here we use loadClogger() to create bees/swarm
 func NewSniper(
 	e sniperETHClient,
 	f sniperFactoryClient,
