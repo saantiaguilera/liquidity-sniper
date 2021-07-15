@@ -1,4 +1,4 @@
-package infrastructure
+package service
 
 import (
 	"context"
@@ -20,6 +20,17 @@ type (
 		watchedAddrs  map[common.Address]domain.NamedAddress
 	}
 )
+
+func NewAddressMonitor(sn domain.Sniper, addrs ...domain.NamedAddress) *AddressMonitor {
+	m := make(map[common.Address]domain.NamedAddress)
+	for _, v := range addrs {
+		m[common.HexToAddress(v.Addr)] = v
+	}
+	return &AddressMonitor{
+		sniperChainID: sn.ChainID,
+		watchedAddrs:  m,
+	}
+}
 
 func (m *AddressMonitor) Monitor(ctx context.Context, tx *types.Transaction) {
 	msg, err := tx.AsMessage(types.NewEIP155Signer(m.sniperChainID), nil)

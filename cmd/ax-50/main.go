@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/log"
 	config2 "github.com/saantiaguilera/liquidity-ax-50/config"
+	"github.com/saantiaguilera/liquidity-ax-50/pkg/domain"
+	"github.com/saantiaguilera/liquidity-ax-50/pkg/service"
 	services2 "github.com/saantiaguilera/liquidity-ax-50/pkg/services"
 	erc202 "github.com/saantiaguilera/liquidity-ax-50/third_party/erc20"
+	"github.com/saantiaguilera/liquidity-ax-50/third_party/pancake"
 	"math/big"
 	"os"
 	"sync"
@@ -137,11 +140,66 @@ func oldmain() {
 
 }
 
+type (
+	monitor interface {
+		Monitor(context.Context, *types.Transaction)
+	}
+)
+
 func main() {
+	ctx := context.Background()
+
 	conf, err := NewConfigFromFile(fmt.Sprintf("%s/%s.json", os.Getenv(configFolderEnv), configFile))
 	if err != nil {
 		panic(err) // halt immediately
 	}
 
 	log.Info(fmt.Sprintf("Configurations parsed: %+v\n", conf))
-}
+
+	rpcClient, err := rpc.DialContext(ctx, conf.Sniper.RPC)
+	if err != nil {
+		panic(err)
+	}
+
+	ethClient := ethclient.NewClient(rpcClient)
+
+	chainID, err := ethClient.NetworkID(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	sniper := domain.NewSniper(
+		conf.Sniper.Trigger,
+		conf.Sniper.BaseCurrency,
+		conf.Sniper.TargetToken,
+		big.NewInt(int64(conf.Sniper.MinLiquidity)),
+		chainID,
+	)
+
+	monitors := make([]monitor, 2)
+
+	if conf.Monitors.AddressListMonitor.Enabled {
+		l := make([]domain.NamedAddress, len(conf.Monitors.AddressListMonitor.List))
+		for i, v := range conf.Monitors.AddressListMonitor.List {
+			l[i] = domain.NewNamedAddress(v.Name, v.Addr)
+		}
+
+		monitors = append(monitors, service.NewAddressMonitor(sniper, l...))
+	}
+
+	if conf.Monitors.WhaleMonitor.Enabled {
+		monitors = append(monitors, service.NewWhaleMonitor(big.NewInt(int64(conf.Monitors.WhaleMonitor.Min))))
+	}
+
+	cakeFactoryAddr, err := conf.Addr(AddressCakeFactory)
+	if err != nil {
+		panic(err)
+	}
+
+	pcsFactory, err := pancake.NewIPancakeFactory(cakeFactoryAddr, ethClient)
+	if err != nil {
+		panic(err)
+	}
+
+	sniperClient := service.NewSniper(ethClient, pcsFactory, ........)
+} // TODO Repasar CAKE_ROUTER / etc que esten todos bien puestos

@@ -6,8 +6,6 @@ type (
 	Sniper struct {
 		// AddressTrigger of the smart contract
 		AddressTrigger string
-		// StandardGasPrice to use in txs
-		StandardGasPrice big.Int
 		// AddressBaseCurrency of the paired token. BNB's address probably.
 		AddressBaseCurrency string
 		// AddressTargetToken to liquidity snipe (buy)
@@ -22,3 +20,17 @@ type (
 		ChainID *big.Int
 	}
 )
+
+func NewSniper(
+	at, abc, att string,
+	ml, ci *big.Int,
+) Sniper {
+
+	return Sniper{
+		AddressTrigger:      at,
+		AddressBaseCurrency: abc,
+		AddressTargetToken:  att,
+		MinimumLiquidity:    ml,
+		ChainID:             ci,
+	}
+}

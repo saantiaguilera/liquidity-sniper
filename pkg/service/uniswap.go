@@ -1,4 +1,4 @@
-package infrastructure
+package service
 
 import (
 	"context"
@@ -133,10 +133,6 @@ func (u *UniswapLiquidity) newETHInputFromTx(tx *types.Transaction) uniswapAddLi
 }
 
 func (u *UniswapLiquidity) getTxSenderAddressQuick(tx *types.Transaction) (common.Address, error) {
-	//chainID, err := u.ethClient.NetworkID(ctx)
-	//if err != nil {
-	//	return common.Address{}, err
-	//} TODO: How to get the sniperChainID
 	msg, err := tx.AsMessage(types.NewEIP155Signer(u.sniperChainID), nil)
 	if err != nil {
 		return common.Address{}, err

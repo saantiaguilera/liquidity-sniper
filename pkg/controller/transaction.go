@@ -21,6 +21,14 @@ type (
 	transactionHandler func(context.Context, *types.Transaction) error
 )
 
+func NewTransaction(resolver transactionResolver, handler transactionHandler) *Transaction {
+	return &Transaction{
+		resolver: resolver,
+		handler:  handler,
+	}
+}
+
+
 func (c *Transaction) Snipe(h common.Hash) error {
 	ctx := context.Background() // TODO: Add timeout.
 

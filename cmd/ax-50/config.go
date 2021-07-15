@@ -2,40 +2,38 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"os"
 )
 
 const (
-	AddressBNB = "bnb"
-	AddressBUSD = "busd"
-	AddressCakeRouter = "cake_router"
-	AddressCakeFactory = "cake_factory"
+	AddressBNB AddressName = "bnb"
+	AddressBUSD AddressName = "busd"
+	AddressCakeRouter AddressName = "cake_router"
+	AddressCakeFactory AddressName = "cake_factory"
 )
 
 type (
+	AddressName string
+
 	Config struct {
-		Account Account `json:"account"`
 		Addresses map[string]string `json:"addresses"`
 		Sniper  Sniper `json:"sniper"`
 		Monitors Monitors `json:"monitors"`
 	}
 
-	Account struct {
-		Address string `json:"address"`
-		PK string `json:"pk"`
-	}
-
 	Sniper struct {
 		Trigger string `json:"trigger"`
-		GasPrice int64 `json:"standard_gas_price"`
 		BaseCurrency string `json:"base_currency"`
 		TargetToken string `json:"target_token"`
 		MinLiquidity int `json:"minimum_liquidity"`
+		RPC string `json:"rpc"`
 	}
 
 	Monitors struct {
 		AddressListMonitor AddressListMonitor `json:"address_list"`
-		BigTransfersMonitor BigTransfersMonitor `json:"big_transfers"`
+		WhaleMonitor       WhaleMonitor       `json:"whale"`
 	}
 
 	AddressListMonitor struct {
@@ -48,7 +46,7 @@ type (
 		Addr string `json:"addr"`
 	}
 
-	BigTransfersMonitor struct {
+	WhaleMonitor struct {
 		Enabled bool `json:"enabled"`
 		Min     int `json:"min"`
 	}
@@ -64,4 +62,11 @@ func NewConfigFromFile(f string) (*Config, error) {
 		return nil, err
 	}
 	return c, nil
+}
+
+func (c *Config) Addr(name AddressName) (common.Address, error) {
+	if v, ok := c.Addresses[string(name)]; ok {
+		return common.HexToAddress(v), nil
+	}
+	return common.Address{}, fmt.Errorf("%s not found in config addressses", name)
 }

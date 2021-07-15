@@ -1,4 +1,4 @@
-package infrastructure
+package service
 
 import (
 	"context"
@@ -16,6 +16,10 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+)
+
+const (
+	nullHash = "0x0000000000000000000000000000000000000000000000000000000000000000"
 )
 
 var (
@@ -266,7 +270,7 @@ func (c *Sniper) execute(ctx context.Context, bee *Bee, gasPrice *big.Int) commo
 
 	if err != nil {
 		log.Info(fmt.Sprintf("error sending tx: %s", err.Error()))
-		return common.HexToHash(domain.NullHash)
+		return common.HexToHash(nullHash)
 	}
 	log.Info(fmt.Sprintf("sent tx: %s", signedTxBee.Hash().Hex()))
 	return signedTxBee.Hash()
