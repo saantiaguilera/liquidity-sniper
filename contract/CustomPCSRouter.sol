@@ -209,7 +209,7 @@ interface IWETH {
     function withdraw(uint) external;
 }
 
-contract SandwichRouter {
+contract CustomPCSRouter {
     using SafeMath for uint;
 
     address public immutable factory = 0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73;
@@ -222,22 +222,9 @@ contract SandwichRouter {
 
     receive() external payable {
         assert(msg.sender == WETH); // only accept ETH via fallback from the WETH contract
-    }    
-    // **** SWAP ****
-    // requires the initial amount to have already been sent to the first pair
-    function _dwich(uint[] memory amounts, address[] memory path, address _to) internal virtual {
-        for (uint i; i < path.length - 1; i++) {
-            (address input, address output) = (path[i], path[i + 1]);
-            (address token0,) = PancakeLibrary.sortTokens(input, output);
-            uint amountOut = amounts[i + 1];
-            (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOut) : (amountOut, uint(0));
-            address to = i < path.length - 2 ? PancakeLibrary.pairFor(factory, output, path[i + 2]) : _to;
-            IPancakePair(PancakeLibrary.pairFor(factory, input, output)).swap(
-                amount0Out, amount1Out, to, new bytes(0)
-            );
-        }
     }
-    function sandwichExactTokensForTokens(
+
+    function swapExactTokensForTokens(
         uint amountIn,
         uint amountOutMin,
         address[] calldata path,
@@ -249,20 +236,16 @@ contract SandwichRouter {
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, PancakeLibrary.pairFor(factory, path[0], path[1]), amounts[0]
         );
-        _dwich(amounts, path, to);
-    }
-    function sandwichTokensForExactTokens(
-        uint amountOut,
-        uint amountInMax,
-        address[] calldata path,
-        address to,
-        uint deadline
-    ) external virtual ensure(deadline) returns (uint[] memory amounts) {
-        amounts = PancakeLibrary.getAmountsIn(factory, amountOut, path);
-        require(amounts[0] <= amountInMax, 'PancakeRouter: EXCESSIVE_INPUT_AMOUNT');
-        TransferHelper.safeTransferFrom(
-            path[0], msg.sender, PancakeLibrary.pairFor(factory, path[0], path[1]), amounts[0]
-        );
-        _dwich(amounts, path, to);
+
+        for (uint i; i < path.length - 1; i++) {
+            (address input, address output) = (path[i], path[i + 1]);
+            (address token0,) = PancakeLibrary.sortTokens(input, output);
+            uint amountOut = amounts[i + 1];
+            (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOut) : (amountOut, uint(0));
+            address to = i < path.length - 2 ? PancakeLibrary.pairFor(factory, output, path[i + 2]) : to;
+            IPancakePair(PancakeLibrary.pairFor(factory, input, output)).swap(
+                amount0Out, amount1Out, to, new bytes(0)
+            );
+        }
     }
 }

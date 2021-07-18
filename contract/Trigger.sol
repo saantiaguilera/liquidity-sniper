@@ -5,7 +5,6 @@ import "./Context.sol";
 import "./Ownable.sol";
 
 interface IERC20 {
-
     function totalSupply() external view returns (uint256);
     function balanceOf(address account) external view returns (uint256);
     function transfer(address recipient, uint256 amount) external returns (bool);
@@ -16,21 +15,14 @@ interface IERC20 {
     event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
-interface ISandwichRouter {
-    function sandwichExactTokensForTokens(
+interface ICustomPCSRouter {
+    function swapExactTokensForTokens(
         uint amountIn,
         uint amountOutMin,
         address[] calldata path,
         address to,
         uint deadline
-    ) external returns (uint[] memory amounts);
-    function sandwichTokensForExactTokens(
-        uint amountOut,
-        uint amountInMax,
-        address[] calldata path,
-        address to,
-        uint deadline
-    ) external returns (uint[] memory amounts);
+    ) external virtual ensure(deadline) returns (uint[] memory amounts);
 }
 
 interface IWBNB {
@@ -54,7 +46,7 @@ interface IPancakeFactory {
     function setFeeToSetter(address) external;
 }
 
-contract Trigger2 is Ownable {
+contract Trigger is Ownable {
 
     // bsc variables 
     address constant wbnb= 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
@@ -66,36 +58,36 @@ contract Trigger2 is Ownable {
     // address constant cakeFactory = 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f;
     
     address payable private administrator;
-    address private sandwichRouter = 0xE86d6A7549cFF2536918a206b6418DE0baE95e99;
+    address private customRouter = 0xE86d6A7549cFF2536918a206b6418DE0baE95e99;
+
     uint private wbnbIn;
     uint private minTknOut;
+
     address private tokenToBuy;
     address private tokenPaired;
+
     bool private snipeLock;
-    
-    mapping(address => bool) public authenticatedSeller;
-    
+
     constructor(){
         administrator = payable(msg.sender);
-        authenticatedSeller[msg.sender] = true;
     }
     
     receive() external payable {
         IWBNB(wbnb).deposit{value: msg.value}();
     }
 
-//================== main functions ======================
+    //================== main functions ======================
 
-    // Trigger2 is the smart contract in charge or performing liquidity sniping and sandwich attacks. 
-    // For liquidity sniping, its role is to hold the BNB, perform the swap once ax-50 detect the tx in the mempool and if all checks are passed; then route the tokens sniped to the owner.
-    // For liquidity sniping, it require a first call to configureSnipe in order to be armed. Then, it can snipe on whatever pair no matter the paired token (BUSD / WBNB etc..).
-    // This contract uses a custtom router which is a copy of PCS router but with modified selectors, so that our tx are more difficult to listen than those directly going through PCS router.   
+    // Trigger is the smart contract in charge or performing liquidity sniping.
+    // Its role is to hold the BNB, perform the swap once ax-50 detect the tx in the mempool and if all checks are passed; then route the tokens sniped to the owner.
+    // It requires a first call to configureSnipe in order to be armed. Then, it can snipe on whatever pair no matter the paired token (BUSD / WBNB etc..).
+    // This contract uses a custtom router which is a copy of PCS router but with modified selectors, so that our tx are more difficult to listen than those directly going through PCS router.
     
     // perform the liquidity sniping
     function snipeListing() external returns(bool success){
         
         require(IERC20(wbnb).balanceOf(address(this)) >= wbnbIn, "snipe: not enough wbnb on the contract");
-        IERC20(wbnb).approve(sandwichRouter, wbnbIn);
+        IERC20(wbnb).approve(customRouter, wbnbIn);
         require(snipeLock == false, "snipe: sniping is locked. See configure");
         snipeLock = true;
         
@@ -112,7 +104,7 @@ contract Trigger2 is Ownable {
             path[1] = tokenToBuy;
         }
 
-        ISandwichRouter(sandwichRouter).sandwichExactTokensForTokens(
+        ICustomPCSRouter(customRouter).swapExactTokensForTokens(
               wbnbIn,
               minTknOut,
               path, 
@@ -122,61 +114,7 @@ contract Trigger2 is Ownable {
         return true;
     }
     
-    // manage the "in" phase of the sandwich attack
-    function sandwichIn(address tokenOut, uint  amountIn, uint amountOutMin) external returns(bool success) {
-        
-        require(msg.sender == administrator || msg.sender == owner(), "in: must be called by admin or owner");
-        require(IERC20(wbnb).balanceOf(address(this)) >= amountIn, "in: not enough wbnb on the contract");
-        IERC20(wbnb).approve(sandwichRouter, amountIn);
-        
-        address[] memory path;
-        path = new address[](2);
-        path[0] = wbnb;
-        path[1] = tokenOut;
-        
-        ISandwichRouter(sandwichRouter).sandwichExactTokensForTokens(
-            amountIn,
-            amountOutMin,
-            path, 
-            address(this),
-            block.timestamp + 120
-        );
-        return true;
-    }
-    
-    // manage the "out" phase of the sandwich. Should be accessible to all authenticated sellers
-    function sandwichOut(address tokenIn, uint amountOutMin) external returns(bool success) {
-        
-        require(authenticatedSeller[msg.sender] == true, "out: must be called by authenticated seller");
-        uint amountIn = IERC20(tokenIn).balanceOf(address(this));
-        require(amountIn >= 0, "out: empty balance for this token");
-        IERC20(tokenIn).approve(sandwichRouter, amountIn);
-        
-        address[] memory path;
-        path = new address[](2);
-        path[0] = tokenIn;
-        path[1] = wbnb;
-        
-        ISandwichRouter(sandwichRouter).sandwichExactTokensForTokens(
-            amountIn,
-            amountOutMin,
-            path, 
-            address(this),
-            block.timestamp + 120
-        );
-        
-        return true;
-    }
-    
-
-    
-    
-//================== owner functions=====================
-
-
-    function authenticateSeller(address _seller) external onlyOwner {
-        authenticatedSeller[_seller] = true;
-    }
+    //================== owner functions=====================
 
     function getAdministrator() external view onlyOwner returns( address payable){
         return administrator;
@@ -184,16 +122,15 @@ contract Trigger2 is Ownable {
 
     function setAdministrator(address payable _newAdmin) external onlyOwner returns(bool success){
         administrator = _newAdmin;
-        authenticatedSeller[_newAdmin] = true;
         return true;
     }
     
-    function getSandwichRouter() external view onlyOwner returns(address){
-        return sandwichRouter;
+    function getCustomPCSRouter() external view onlyOwner returns(address){
+        return customRouter;
     }
     
-    function setSandwichRouter(address _newRouter) external onlyOwner returns(bool success){
-        sandwichRouter = _newRouter;
+    function setCustomPCSRouter(address _newRouter) external onlyOwner returns(bool success){
+        customRouter = _newRouter;
         return true;
     }
     

@@ -1,8 +1,5 @@
 ## TODO
 
-1. Check contracts
-  * Remove sandwich stuff
-  * Remove old stuff?
-2. Add TP / SL functionalities
-3. Add support for runtime address snipes (a POST?)
-4. Consider removing the init of the router? Check if possible
+1. Add TP / SL functionalities
+2. Add support for runtime address snipes (a POST?)
+3. Check how to bypass the need to preconfigure the router for each snipe

@@ -253,7 +253,7 @@ def configureTrigger():
         tkn_balance_old = tokenToBuy.balanceOf(admin)
 
         print("\n---> configuring TRIGGER for sniping")
-        trigger = interface.ITrigger2(trigger_addr)
+        trigger = interface.ITrigger(trigger_addr)
         trigger.configureSnipe(PAIRED_TOKEN, AMOUNT_IN_WBNB,
                                ttb_addr, AMOUNT_OUT_MIN_TKN, {'from': me, "gas_price": "10 gwei"})
         
