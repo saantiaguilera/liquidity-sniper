@@ -76,8 +76,6 @@ contract Trigger is Ownable {
         IWBNB(wbnb).deposit{value: msg.value}();
     }
 
-    //================== main functions ======================
-
     // Trigger is the smart contract in charge or performing liquidity sniping.
     // Its role is to hold the BNB, perform the swap once ax-50 detect the tx in the mempool and if all checks are passed; then route the tokens sniped to the owner.
     // It requires a first call to configureSnipe in order to be armed. Then, it can snipe on whatever pair no matter the paired token (BUSD / WBNB etc..).
@@ -85,7 +83,6 @@ contract Trigger is Ownable {
     
     // perform the liquidity sniping
     function snipeListing() external returns(bool success){
-        
         require(IERC20(wbnb).balanceOf(address(this)) >= wbnbIn, "snipe: not enough wbnb on the contract");
         IERC20(wbnb).approve(customRouter, wbnbIn);
         require(snipeLock == false, "snipe: sniping is locked. See configure");
@@ -97,7 +94,6 @@ contract Trigger is Ownable {
             path[0] = wbnb;
             path[1] = tokenPaired;
             path[2] = tokenToBuy;
-
         } else {
             path = new address[](2);
             path[0] = wbnb;
@@ -114,8 +110,6 @@ contract Trigger is Ownable {
         return true;
     }
     
-    //================== owner functions=====================
-
     function getAdministrator() external view onlyOwner returns( address payable){
         return administrator;
     }
@@ -136,7 +130,6 @@ contract Trigger is Ownable {
     
     // must be called before sniping
     function configureSnipe(address _tokenPaired, uint _amountIn, address _tknToBuy,  uint _amountOutMin) external onlyOwner returns(bool success){
-        
         tokenPaired = _tokenPaired;
         wbnbIn = _amountIn;
         tokenToBuy = _tknToBuy;
@@ -156,7 +149,7 @@ contract Trigger is Ownable {
         return true;
     }
     
-    // souldn't be of any use as receive function automaticaly wrap bnb incoming
+    // shouldn't be of any use as receive function automatically wrap bnb incoming
     function emmergencyWithdrawBnb() external onlyOwner returns(bool success){
         require(address(this).balance >0 , "contract has an empty BNB balance");
         administrator.transfer(address(this).balance);
