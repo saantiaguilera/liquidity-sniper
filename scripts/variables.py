@@ -32,6 +32,6 @@ GWEI = 1000
 PAIRED_TOKEN = WBNB_ADDRESS
 
 # those accounts name are supposed to be registered in your eth-brownie setup files 
-DISPERSER_ACCOUNT = "press1"
-TRIGGER_OWNER = "bsc2"
-TRIGGER_ADMIN = "press1"
+DISPERSER_ACCOUNT = "press1" # Acc that holds the initial BNB to disperse to all bees
+TRIGGER_OWNER = "bsc2"       # Owner of trigger contract
+TRIGGER_ADMIN = "press1"     # Admin of trigger contract

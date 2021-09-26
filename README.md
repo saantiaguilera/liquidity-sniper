@@ -14,6 +14,9 @@ Being able to frontrun implies building on top of GETH client and having access 
 
 ## Setup
 
+Make sure to first deploy all contracts and configure them with your newly created addresses. You should configure:
+- Trigger custom router address with your CustomPCSRouter
+
 I created the script scheduler.py which will run you through all the necessary steps to configure the bot. The configuration file of the scheduler is variables.py, so please be sure to adapt everything in variables.py to your own configuration.
 
 The scheduler walk you through 4 phases:

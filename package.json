@@ -1,0 +1,34 @@
+{
+    "name": "ax-50-deployer",
+    "version": "1.0.0",
+    "description": "",
+    "main": "truffle-config.js",
+    "directories": {
+        "test": "test"
+    },
+    "dependencies": {
+        "@openzeppelin/contracts": "^3.4.1",
+        "@openzeppelin/contracts-upgradeable": "^3.4.1",
+        "@truffle/hdwallet-provider": "^1.2.6",
+        "@uniswap/v2-core": "^1.0.1",
+        "dotenv": "^8.2.0"
+    },
+    "devDependencies": {
+        "@openzeppelin/test-helpers": "^0.5.11",
+        "@openzeppelin/truffle-upgrades": "^1.8.0",
+        "@truffle/config": "^1.2.41",
+        "@truffle/provider": "^0.2.32",
+        "truffle": "^5.2.3",
+        "truffle-contract-size": "^2.0.1",
+        "truffle-export-abi": "^1.0.1",
+        "truffle-plugin-verify": "^0.5.7",
+        "yargs": "^17.0.1"
+    },
+    "scripts": {
+        "deploy": "sudo truffle migrate --reset",
+        "deploy-testnet": "sudo truffle migrate --network bsctestnet"
+    },
+    "keywords": [],
+    "author": "",
+    "license": ""
+}

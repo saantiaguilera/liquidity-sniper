@@ -47,7 +47,7 @@ func (u *TransactionClassifier) Classify(ctx context.Context, tx *types.Transact
 	u.monitor(ctx, tx)
 
 	if tx.To().Hex() == u.routerAddr && len(tx.Data()) >= 4 {
-		u.mut.Lock() // TODO Check need. I think the sniper service already handles these lock.
+		u.mut.Lock()
 		defer u.mut.Unlock()
 
 		txFunctionHash := [4]byte{}

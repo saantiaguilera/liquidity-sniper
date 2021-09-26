@@ -1,18 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.0;
+pragma solidity >=0.6.0 <0.8.0;
 
-import "./Context.sol";
-import "./Ownable.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-interface IERC20 {
-    function totalSupply() external view returns (uint256);
-    function balanceOf(address account) external view returns (uint256);
-    function transfer(address recipient, uint256 amount) external returns (bool);
-    function allowance(address owner, address spender) external view returns (uint256);
-    function approve(address spender, uint256 amount) external returns (bool);
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
+interface IWBNB {
+    function withdraw(uint) external;
+    function deposit() external payable;
 }
 
 interface ICustomPCSRouter {
@@ -22,28 +17,7 @@ interface ICustomPCSRouter {
         address[] calldata path,
         address to,
         uint deadline
-    ) external virtual ensure(deadline) returns (uint[] memory amounts);
-}
-
-interface IWBNB {
-    function withdraw(uint) external;
-    function deposit() external payable;
-}
-
-interface IPancakeFactory {
-    event PairCreated(address indexed token0, address indexed token1, address pair, uint);
-
-    function feeTo() external view returns (address);
-    function feeToSetter() external view returns (address);
-
-    function getPair(address tokenA, address tokenB) external view returns (address pair);
-    function allPairs(uint) external view returns (address pair);
-    function allPairsLength() external view returns (uint);
-
-    function createPair(address tokenA, address tokenB) external returns (address pair);
-
-    function setFeeTo(address) external;
-    function setFeeToSetter(address) external;
+    ) external returns (uint[] memory amounts);
 }
 
 contract Trigger is Ownable {
@@ -58,7 +32,7 @@ contract Trigger is Ownable {
     // address constant cakeFactory = 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f;
     
     address payable private administrator;
-    address private customRouter = 0xE86d6A7549cFF2536918a206b6418DE0baE95e99;
+    address private customRouter;
 
     uint private wbnbIn;
     uint private minTknOut;
@@ -68,7 +42,7 @@ contract Trigger is Ownable {
 
     bool private snipeLock;
 
-    constructor(){
+    constructor() public {
         administrator = payable(msg.sender);
     }
     
