@@ -1,5 +1,4 @@
 from brownie import *
-from math import floor
 from time import sleep
 import itertools
 from variables import *
@@ -7,7 +6,6 @@ import itertools
 import json
 import os
 import concurrent.futures
-from pynput.keyboard import Key, Controller
 
 COUNTER = itertools.count()
 ACC_LIST = []
@@ -17,7 +15,7 @@ ACC_INDEX = itertools.count()
 
 def _bnb_price():
     assert chain.id == 56, "_bnbPrice: WRONG NETWORK. This function only works on bsc mainnet"
-    pair_busd = interface.IPancakePair(busd_wbnb_addr)
+    pair_busd = Contract.from_explorer(busd_wbnb_addr)
     (reserveUSD, reserveBNB, _) = pair_busd.getReserves()
     price_busd = reserveBNB / reserveUSD
     return round(price_busd, 2)
@@ -236,7 +234,7 @@ def createBeeBook():
 # Trigger
 
 def configureTrigger():
-    tokenToBuy = interface.ERC20(ttb_addr)
+    tokenToBuy = Contract.from_explorer(ttb_addr)
 
     print(
         f'\nCURRENT CONFIGURATION:\n\nWANT TO BUY AT LEAST {AMOUNT_OUT_MIN_TKN/10**18} {tokenToBuy.name()} (${tokenToBuy.symbol()})\nWITH {AMOUNT_IN_WBNB / 10**18} WBNB\n')
@@ -253,12 +251,12 @@ def configureTrigger():
         tkn_balance_old = tokenToBuy.balanceOf(admin)
 
         print("\n---> configuring TRIGGER for sniping")
-        trigger = interface.ITrigger(trigger_addr)
+        trigger = Contract.from_explorer(trigger_addr)
         trigger.configureSnipe(PAIRED_TOKEN, AMOUNT_IN_WBNB,
                                ttb_addr, AMOUNT_OUT_MIN_TKN, {'from': me, "gas_price": "10 gwei"})
         
 
-        triggerBalance = interface.ERC20(wbnb_addr).balanceOf(trigger)
+        triggerBalance = Contract.from_explorer(wbnb_addr).balanceOf(trigger)
 
         if triggerBalance < AMOUNT_IN_WBNB:
 
@@ -277,7 +275,7 @@ def configureTrigger():
 
         print("\nTRIGGER CONFIGURATION READY\n")
         print(
-            f'---> Wbnb balance of trigger: {interface.ERC20(wbnb_addr).balanceOf(trigger)/10**18}')
+            f'---> Wbnb balance of trigger: {Contract.from_explorer(wbnb_addr).balanceOf(trigger)/10**18}')
         print(
             f'---> Token balance of admin: {tkn_balance_old/10**18 if tkn_balance_old != 0 else 0}\n\n')
 
