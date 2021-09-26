@@ -70,7 +70,7 @@ linters-settings:
     lines: 100
     statements: 50
   gci:
-    local-prefixes: github.com/saantiaguilera/liquidity-AX-50
+    local-prefixes: github.com/saantiaguilera/liquidity-sniper
   gocognit:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
     min-complexity: 20

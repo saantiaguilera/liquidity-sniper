@@ -16,8 +16,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/saantiaguilera/liquidity-AX-50/pkg/domain"
-	"github.com/saantiaguilera/liquidity-AX-50/third_party/erc20"
+	"github.com/saantiaguilera/liquidity-sniper/pkg/domain"
+	"github.com/saantiaguilera/liquidity-sniper/third_party/erc20"
 )
 
 const (

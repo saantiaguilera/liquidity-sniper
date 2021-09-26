@@ -8,8 +8,8 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/saantiaguilera/liquidity-AX-50/pkg/controller"
-	"github.com/saantiaguilera/liquidity-AX-50/pkg/service"
+	"github.com/saantiaguilera/liquidity-sniper/pkg/controller"
+	"github.com/saantiaguilera/liquidity-sniper/pkg/service"
 )
 
 // Entry point of ax-50.

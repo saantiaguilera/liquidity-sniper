@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/saantiaguilera/liquidity-AX-50/pkg/service"
-	"github.com/saantiaguilera/liquidity-AX-50/pkg/usecase"
+	"github.com/saantiaguilera/liquidity-sniper/pkg/service"
+	"github.com/saantiaguilera/liquidity-sniper/pkg/usecase"
 )
 
 func newTxClassifierUseCase(

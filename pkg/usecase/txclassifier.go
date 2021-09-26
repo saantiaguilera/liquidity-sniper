@@ -6,7 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/core/types"
 
-	"github.com/saantiaguilera/liquidity-AX-50/pkg/domain"
+	"github.com/saantiaguilera/liquidity-sniper/pkg/domain"
 )
 
 type (

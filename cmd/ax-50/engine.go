@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rpc"
 
-	"github.com/saantiaguilera/liquidity-AX-50/pkg/controller"
+	"github.com/saantiaguilera/liquidity-sniper/pkg/controller"
 )
 
 type (

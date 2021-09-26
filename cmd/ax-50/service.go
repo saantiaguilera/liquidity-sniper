@@ -12,9 +12,9 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
 
-	"github.com/saantiaguilera/liquidity-AX-50/pkg/domain"
-	"github.com/saantiaguilera/liquidity-AX-50/pkg/service"
-	"github.com/saantiaguilera/liquidity-AX-50/third_party/pancake"
+	"github.com/saantiaguilera/liquidity-sniper/pkg/domain"
+	"github.com/saantiaguilera/liquidity-sniper/pkg/service"
+	"github.com/saantiaguilera/liquidity-sniper/third_party/pancake"
 )
 
 type (
