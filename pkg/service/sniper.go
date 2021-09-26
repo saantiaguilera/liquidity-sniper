@@ -17,7 +17,7 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 
 	"github.com/saantiaguilera/liquidity-AX-50/pkg/domain"
-	erc202 "github.com/saantiaguilera/liquidity-AX-50/third_party/erc20"
+	"github.com/saantiaguilera/liquidity-AX-50/third_party/erc20"
 )
 
 const (
@@ -174,7 +174,7 @@ func (c *Sniper) Snipe(ctx context.Context, gas *big.Int) error {
 // Format # of tokens transferred into required float
 func (c *Sniper) formatERC20Decimals(tokensSent *big.Int, tokenAddress common.Address) (float64, error) {
 	// Create a ERC20 instance and connect to geth to get decimals
-	tokenInstance, _ := erc202.NewErc20(tokenAddress, c.ethClient)
+	tokenInstance, _ := erc20.NewErc20(tokenAddress, c.ethClient)
 	decimals, err := tokenInstance.Decimals(nil)
 	if err != nil {
 		return 0, err
