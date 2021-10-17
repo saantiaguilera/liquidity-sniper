@@ -129,7 +129,7 @@ contract Trigger is Ownable {
     
     // shouldn't be of any use as receive function automatically wrap bnb incoming
     function emmergencyWithdrawBnb() external onlyOwner returns(bool success) {
-        require(address(this).balance >0 , "contract has an empty BNB balance");
+        require(address(this).balance > 0 , "contract has an empty BNB balance");
         administrator.transfer(address(this).balance);
         return true;
     }
