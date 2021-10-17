@@ -32,7 +32,7 @@ async function applyConfiguration(
     triggerAdminWallet: ethers.Wallet,
 ): Promise<boolean> {
 
-    console.log(`> Applying trigger configuration`)
+    console.log(`\n> Applying trigger configuration`)
     console.log(`  Using admin: ${triggerAdminWallet.address}`)
     console.log(`  Admin balance: ${(await triggerAdminWallet.getBalance()).div(10**18).toString()} BNB`)
     console.log(`  Trigger contract: ${trigger.address}`)
@@ -48,7 +48,7 @@ async function applyConfiguration(
         }
     )
 
-    console.log(`> Trigger configuration submitted: ${hash}`)
+    console.log(`\n> Trigger configuration submitted: ${hash}`)
     const receipt = await bscProvider.waitForTransaction(hash);
     if (receipt.status != 1) {
         console.log(` [ERROR] Tx ${hash} failed: ${receipt}`)
@@ -72,7 +72,7 @@ async function supplyTrigger(
     const triggerBalance = await wbnb.balanceOf(trigger)
 
     if (triggerBalance.lt(orderAmount)) {
-        console.log(`> Supplying BNB to trigger contract`)
+        console.log(`\n> Supplying BNB to trigger contract`)
         const diffAmount = orderAmount.sub(triggerBalance).add(1)
         if ((await triggerAdminWallet.getBalance()).lte(diffAmount.add(21000 * 10**10))) {
             console.log(`  [ERROR] Trigger admin ${triggerAdminWallet.address} has insufficient balance to provide to sniper. Required: ${diffAmount.add(21000 * 6**10).div(10**18).toString()} BNB`)
@@ -134,9 +134,9 @@ async function promptTrigger(): Promise<void> {
     console.log(`  Token to buy: ${erc20.address}`)
     console.log(`  Order size: ${orderSize} BNB`)
     console.log(`  Min buy: ${minimumTokens} ${tokenSymbol}`)
-    console.log('[WARNING] Configuring a trigger will REMOVE any existing one. Make sure the previous trigger has been already used.')
+    console.log('[WARNING] Configuring a trigger will REMOVE any existing ones. Make sure the previous trigger has been already used.')
 
-    rl.question(`> Configure new trigger? [y/n]`, async (answer) => {
+    rl.question(`\n> Configure new trigger? [y/n]: `, async (answer) => {
         switch(answer.toLowerCase()) {
           case 'y':
             await configureTrigger(erc20, token.pair_address)

@@ -50,7 +50,7 @@ async function refund(me: ethers.Wallet, bee: Bee): Promise<any> {
 }
 
 async function refundAll(book: Array<Bee>): Promise<void> {
-    console.log("> Starting refund process..")
+    console.log("\n> Starting refund process..")
 
     const me = new ethers.Wallet(admin, bscProvider)
     console.log(`  Owner wallet: ${me.address}`)
@@ -64,7 +64,7 @@ async function refundAll(book: Array<Bee>): Promise<void> {
     await Promise.all(refunds)
 
     console.log(`  New owner wallet balance: ${(await me.getBalance()).div(10**18).toString()} BNB}`)
-    console.log("> Refund finished.")
+    console.log("\n> Refund finished.")
 }
 
 async function checkBalance(bee: Bee): Promise<BigNumber> {
@@ -98,7 +98,7 @@ async function checkRefund(): Promise<void> {
     })
 
     if (dust.gt(0)) {
-        rl.question(`> Found ${fundedBees} wallets with BNB dust. Launch refund? [y/n]`, async (answer) => {
+        rl.question(`\n> Found ${fundedBees} wallets with BNB dust. Launch refund? [y/n]: `, async (answer) => {
             switch(answer.toLowerCase()) {
               case 'y':
                 await refundAll(book)

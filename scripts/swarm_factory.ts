@@ -74,7 +74,7 @@ async function createSwarm(): Promise<void> {
     let wallets: Array<ethers.Wallet> = []
 
     const disperserWallet = new ethers.Wallet(disperser, bscProvider)
-    console.log('> Creating swarm...')
+    console.log('\n> Creating swarm...')
     console.log(`  Disperser wallet: ${disperserWallet.address}`)
     console.log(`  Disperser wallet balance: ${(await disperserWallet.getBalance()).div(10**18).toString()} BNB`)
 
@@ -107,9 +107,9 @@ async function checkSwarm(): Promise<void> {
     console.log(`  Rounds: ${rounds}`)
     console.log(`  Addresses: ${2**rounds}`)
     console.log(`  BNB to spread: ${spread_amount}`)
-    console.log('[WARNING] Creating a new swarm will REMOVE any existing one. Make sure to refund previous ones before creating a new one')
+    console.log('[WARNING] Creating a new swarm will REMOVE any existing ones. Make sure to refund previous ones before creating a new one')
 
-    rl.question(`> Create new swarm? [y/n]`, async (answer) => {
+    rl.question(`\n> Create new swarm? [y/n]: `, async (answer) => {
         switch(answer.toLowerCase()) {
           case 'y':
             await createSwarm()
