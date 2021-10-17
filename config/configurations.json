@@ -4,10 +4,10 @@
     "cake_router": "0x10ED43C718714eb63d5aA57B78B54704E256024E"
   },
   "sniper": {
-    "rpc": "https://data-seed-prebsc-2-s2.binance.org:8545/",
-    "trigger": "0x5E861f174640A6E1ED6D8D3f0D21579d52Ef2461",
+    "rpc": "https://data-seed-prebsc-2-s1.binance.org:8545/",
+    "trigger": "0xedF6E087019459e8Edc06CcCDA2D3db1DfA0185C",
     "base_currency": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
-    "target_token": "0x542c3731a3ecc1c0af679d1f2df69c8b9a8f8a1c",
+    "target_token": "0x9412F9AB702AfBd805DECe8e0627427461eF0602",
     "minimum_liquidity": 0.2
   },
   "monitors": {

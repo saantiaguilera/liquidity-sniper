@@ -15,7 +15,9 @@
     },
     "token": {
         "address": "address of the token to snipe. eg: 0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
-        "pair_address": "address of the paired token in the LP. Probably WBNB (99%). eg: 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
+        "pair_address": "address of the paired token in the LP. Probably WBNB (99%). eg: 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+        "wbnb": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+        "busd": "0xe9e7cea3dedca5984780bafc599bd69add087d56"
     },
     "accounts": {
         "admin": "admin is the administrator / deployer of the contracts. this pk gets the final sniped tokens, refunds and interacts with the trigger (supplying bnb / calling it / etc). eg: 1a3eb3fcacddad1...18baac8",

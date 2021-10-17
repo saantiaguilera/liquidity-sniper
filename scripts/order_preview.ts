@@ -1,8 +1,11 @@
 import { chain, order, token, previewer } from '../config/local.json';
 import { ethers } from "ethers";
+import { Fetcher } from '@pancakeswap/sdk';
+import Web3 from 'web3'
 
 const { ext_order_size, liquidity_in_bnb, liquidity_in_token } = previewer;
 const tokenAddress = token.address
+const { wbnb, busd } = token
 const selfOrderSize = order.size
 
 const bscProvider = new ethers.providers.JsonRpcProvider(
@@ -13,17 +16,20 @@ const bscProvider = new ethers.providers.JsonRpcProvider(
     }
 )
 
-async function getBNBPrice(): Promise<number> {
-    const abi = [
-        "function getReserves() external view returns (uint112, uint112, uint32)",
-    ]
-    const addr = '0x58F876857a02D6762E0101bb5C46A8c1ED44Dc16'
-    const busdBNBPair = new ethers.Contract(addr, abi, bscProvider);
-
-    const [ rsvBusd, rsvBNB ] = await busdBNBPair.getReserves()
-
-    const precision = 10000
-    return rsvBNB.div(rsvBusd).mul(precision).toNumber() / precision
+async function getTokenPrice(token1Address: string, token2Address: string): Promise<number> {
+    const tokenA = await Fetcher.fetchTokenData(
+      chain.id,
+      Web3.utils.toChecksumAddress(token1Address),
+      bscProvider,
+    );
+    const tokenB = await Fetcher.fetchTokenData(
+        chain.id,
+        Web3.utils.toChecksumAddress(token2Address),
+        bscProvider,
+    );
+    const pair = await Fetcher.fetchPairData(tokenA, tokenB, bscProvider);
+    const price = pair.token0Price.toSignificant(10);
+    return parseFloat(price);
 }
 
 function quote(minAmount: number, rsvIn: number, rsvOut: number): number {
@@ -62,7 +68,7 @@ async function preview(): Promise<void> {
     console.log(`> Expecting liquidity of ${liquidity_in_bnb} BNB + ${liquidity_in_token} ${tokenName}.`)
     console.log(`> [PREVIEW] Order size to snipe: ${selfOrderSize} BNB`)
     
-    const bnbPrice = await getBNBPrice()
+    const bnbPrice = await getTokenPrice(wbnb, busd)
     console.log(`Current BNB price: ${bnbPrice.toFixed(3)}`)
     console.log('\nStarting simulation...')
 

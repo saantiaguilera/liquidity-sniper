@@ -5,6 +5,7 @@ import { ethers, utils } from "ethers";
 import { BigNumber } from '@ethersproject/bignumber';
 import * as readline from 'readline';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
+import { exit } from 'process';
 
 const orderSize = order.size;
 const minimumTokens = order.expected_tokens;
@@ -72,9 +73,9 @@ async function supplyTrigger(
     const wbnbAbi = [
         "function balanceOf(address who) public view returns (uint256)",
     ]
-    const wbnbAddress = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c'
+    const wbnbAddress = token.wbnb
     const wbnb = new ethers.Contract(wbnbAddress, wbnbAbi, bscProvider)
-    const triggerBalance = await wbnb.balanceOf(trigger)
+    const triggerBalance = await wbnb.balanceOf(trigger.address)
 
     if (triggerBalance.lt(orderAmount)) {
         console.log(`\n> Supplying BNB to trigger contract`)
@@ -87,13 +88,16 @@ async function supplyTrigger(
         const txReq: TransactionRequest = {
             to: trigger.address,
             value: diffAmount,
+            gasPrice: gasPrice,
+            gasLimit: ethers.utils.hexlify(300000),
         }
+
         const { hash } = await triggerAdminWallet.sendTransaction(txReq)
     
         console.log(`  Tx supplying BNB for trigger contract ${trigger.address}: ${hash}`)
         const receipt = await bscProvider.waitForTransaction(hash);
         if (receipt.status != 1) {
-            console.log(` [ERROR] Tx ${hash} failed at ${triggerAdminWallet.address}: ${receipt}`)
+            console.log(` [ERROR] Tx ${hash} failed at ${triggerAdminWallet.address}: ${JSON.stringify(receipt)}`)
             return false
         }
         console.log(`  Trigger supplied with necessary BNB.`)
@@ -104,7 +108,7 @@ async function supplyTrigger(
 async function configureTrigger(token: ethers.Contract, pair: string): Promise<void> {
     const triggerAdminWallet = new ethers.Wallet(admin, bscProvider)
     const triggerAbi = [
-        "function configureSnipe(address _tokenPaired, uint _amountIn, address _tknToBuy, uint _amountOutMin) external onlyOwner returns(bool)",
+        "function configureSnipe(address _tokenPaired, uint _amountIn, address _tknToBuy, uint _amountOutMin) external returns(bool)",
     ]
     const trigger = new ethers.Contract(triggerAddress, triggerAbi, triggerAdminWallet)
     const orderAmount = BigNumber.from(orderSize * 1000).mul(BigNumber.from(10).pow(15)) // orderSize can have up to 3 decimal places
