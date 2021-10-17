@@ -98,7 +98,7 @@ async function supplyTrigger(
 
 async function configureTrigger(token: ethers.Contract, pair: string): Promise<void> {
     const triggerAbi = [
-        "function configureSnipe(address _tokenPaired, uint _amountIn, address _tknToBuy,  uint _amountOutMin) external onlyOwner returns(bool)",
+        "function configureSnipe(address _tokenPaired, uint _amountIn, address _tknToBuy, uint _amountOutMin) external onlyOwner returns(bool)",
     ]
     const trigger = new ethers.Contract(triggerAddress, triggerAbi, bscProvider)
     const triggerAdminWallet = new ethers.Wallet(admin, bscProvider)
