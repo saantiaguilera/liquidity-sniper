@@ -78,7 +78,7 @@ async function createSwarm(): Promise<void> {
     console.log(`  Disperser wallet: ${disperserWallet.address}`)
     console.log(`  Disperser wallet balance: ${(await disperserWallet.getBalance()).div(10**18).toString()} BNB`)
 
-    // Initial dispersion. Give to the first bee all our snipe amount
+    // Initial dispersion. Give to the first bee all our spread amount
     const initialBee = await disperse(disperserWallet, BigNumber.from(spread_amount).mul(10**18))
     if (initialBee != null) {
         wallets.push(initialBee)
