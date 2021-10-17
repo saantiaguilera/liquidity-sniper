@@ -30,21 +30,25 @@ async function applyConfiguration(
     orderAmount: BigNumber,
     trigger: ethers.Contract,
     triggerAdminWallet: ethers.Wallet,
+    gasPrice: BigNumber,
 ): Promise<boolean> {
 
     console.log(`\n> Applying trigger configuration`)
     console.log(`  Using admin: ${triggerAdminWallet.address}`)
-    console.log(`  Admin balance: ${(await triggerAdminWallet.getBalance()).div(10**18).toString()} BNB`)
+    console.log(`  Admin balance: ${((await triggerAdminWallet.getBalance()).div(BigNumber.from(10).pow(14)).toNumber() / 10000).toFixed(3)} BNB`)
     console.log(`  Trigger contract: ${trigger.address}`)
+
+    // minTokens can have up to 3 decimal places in floating point in case token has low supply
+    const minTokens = BigNumber.from(minimumTokens * 1000).mul(BigNumber.from(10).pow(15))
 
     const { hash } = await trigger.configureSnipe(
         pair,
         orderAmount,
         token.address,
-        minimumTokens,
+        minTokens,
         {
             from: triggerAdminWallet.address,
-            gasPrice: utils.parseUnits('10', 'gwei'),
+            gasPrice: gasPrice,
         }
     )
 
@@ -62,6 +66,7 @@ async function supplyTrigger(
     orderAmount: BigNumber,
     trigger: ethers.Contract,
     triggerAdminWallet: ethers.Wallet,
+    gasPrice: BigNumber,
 ): Promise<boolean> {
 
     const wbnbAbi = [
@@ -74,8 +79,8 @@ async function supplyTrigger(
     if (triggerBalance.lt(orderAmount)) {
         console.log(`\n> Supplying BNB to trigger contract`)
         const diffAmount = orderAmount.sub(triggerBalance).add(1)
-        if ((await triggerAdminWallet.getBalance()).lte(diffAmount.add(21000 * 10**10))) {
-            console.log(`  [ERROR] Trigger admin ${triggerAdminWallet.address} has insufficient balance to provide to sniper. Required: ${diffAmount.add(21000 * 6**10).div(10**18).toString()} BNB`)
+        if ((await triggerAdminWallet.getBalance()).lte(diffAmount.add(BigNumber.from(21000).mul(gasPrice)))) {
+            console.log(`  [ERROR] Trigger admin ${triggerAdminWallet.address} has insufficient balance to provide to sniper. Required: ${((diffAmount.add(BigNumber.from(21000).mul(gasPrice)).div(BigNumber.from(10).pow(14)).toNumber()) / 10000).toFixed(3)} BNB`)
             return false
         }
 
@@ -102,7 +107,8 @@ async function configureTrigger(token: ethers.Contract, pair: string): Promise<v
         "function configureSnipe(address _tokenPaired, uint _amountIn, address _tknToBuy, uint _amountOutMin) external onlyOwner returns(bool)",
     ]
     const trigger = new ethers.Contract(triggerAddress, triggerAbi, triggerAdminWallet)
-    const orderAmount = BigNumber.from(orderSize).mul(10**18)
+    const orderAmount = BigNumber.from(orderSize * 1000).mul(BigNumber.from(10).pow(15)) // orderSize can have up to 3 decimal places
+    const gasPrice = await bscProvider.getGasPrice()
 
     let ok = await applyConfiguration(
         token,
@@ -110,13 +116,14 @@ async function configureTrigger(token: ethers.Contract, pair: string): Promise<v
         orderAmount,
         trigger,
         triggerAdminWallet,
+        gasPrice,
     )
     if (!ok) {
         console.log('[ERROR] Halting.')
         return
     }
     
-    ok = await supplyTrigger(orderAmount, trigger, triggerAdminWallet)
+    ok = await supplyTrigger(orderAmount, trigger, triggerAdminWallet, gasPrice)
     if (!ok) {
         console.log('[ERROR] Halting.')
         return

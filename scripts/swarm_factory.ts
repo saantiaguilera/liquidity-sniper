@@ -46,21 +46,23 @@ function newBook(wallets: Array<ethers.Wallet>) {
 }
 
 function newAccount(): ethers.Wallet {
-    return ethers.Wallet.createRandom()
+    return ethers.Wallet.createRandom().connect(bscProvider)
 }
 
-async function disperse(wallet: ethers.Wallet, amount: BigNumber): Promise<ethers.Wallet | null> {
+async function disperse(wallet: ethers.Wallet, amount: BigNumber, gasPrice: BigNumber): Promise<ethers.Wallet | null> {
     const bee = newAccount()
 
     const txReq: TransactionRequest = {
         to: bee.address,
-        value: amount.sub(21000 * 6**10),
-        gasPrice: ethers.utils.parseUnits("6", "gwei"),
+        value: amount.sub(BigNumber.from(21000).mul(gasPrice)),
+        gasPrice: gasPrice,
         gasLimit: ethers.utils.hexlify(21000),
     }
     const { hash } = await wallet.sendTransaction(txReq)
 
-    console.log(`  New bee created: ${bee.address}`)
+    console.log(`\n  New bee created:`)
+    console.log(`      Address: ${bee.address}`)
+    console.log(`      Private key: ${bee.privateKey}`)
     console.log(`  Tx supplying BNB for bee ${bee.address}: ${hash}`)
     const receipt = await bscProvider.waitForTransaction(hash);
     if (receipt.status != 1) {
@@ -76,10 +78,12 @@ async function createSwarm(): Promise<void> {
     const disperserWallet = new ethers.Wallet(disperser, bscProvider)
     console.log('\n> Creating swarm...')
     console.log(`  Disperser wallet: ${disperserWallet.address}`)
-    console.log(`  Disperser wallet balance: ${(await disperserWallet.getBalance()).div(10**18).toString()} BNB`)
+    console.log(`  Disperser wallet balance: ${((await disperserWallet.getBalance()).div(BigNumber.from(10).pow(14)).toNumber() / 10000).toFixed(3)} BNB`)
+
+    const gasPrice = await bscProvider.getGasPrice()
 
     // Initial dispersion. Give to the first bee all our spread amount
-    const initialBee = await disperse(disperserWallet, BigNumber.from(spread_amount).mul(10**18))
+    const initialBee = await disperse(disperserWallet, BigNumber.from(spread_amount * 1000).mul(BigNumber.from(10).pow(15)), gasPrice) // allow spread_amount up to 3 decimal places
     if (initialBee != null) {
         wallets.push(initialBee)
     }
@@ -87,10 +91,10 @@ async function createSwarm(): Promise<void> {
     // Round start. On each round pow2 wallets where each one will give half of its amount to the new one
     for (let i = 0; i < rounds; i++) {
         let dispersions: Array<Promise<ethers.Wallet | null>> = []
-        wallets.forEach(async wallet => {
+        for (const wallet of wallets) {
             const balance = await wallet.getBalance()
-            dispersions.push(disperse(wallet, balance.div(2)))
-        })
+            dispersions.push(disperse(wallet, balance.div(2), gasPrice))
+        }
 
         const newWallets = await Promise.all(dispersions)
         wallets.push(...newWallets.flatMap(v => !!v ? [v] : []))
@@ -99,6 +103,9 @@ async function createSwarm(): Promise<void> {
     // Save new book
     if (wallets.length > 0) {
         newBook(wallets)
+        console.log(`\nWallets saved in ${path} succesfully`)
+    } else {
+        console.log(`\nNo wallets saved`)
     }
 }
 

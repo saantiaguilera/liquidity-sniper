@@ -22,7 +22,8 @@ async function getBNBPrice(): Promise<number> {
 
     const [ rsvBusd, rsvBNB ] = await busdBNBPair.getReserves()
 
-    return rsvBNB.div(rsvBusd).toNumber().toFixed(2)
+    const precision = 10000
+    return rsvBNB.div(rsvBusd).mul(precision).toNumber() / precision
 }
 
 function quote(minAmount: number, rsvIn: number, rsvOut: number): number {
@@ -62,7 +63,7 @@ async function preview(): Promise<void> {
     console.log(`> [PREVIEW] Order size to snipe: ${selfOrderSize} BNB`)
     
     const bnbPrice = await getBNBPrice()
-    console.log(`Current BNB price: ${bnbPrice}`)
+    console.log(`Current BNB price: ${bnbPrice.toFixed(3)}`)
     console.log('\nStarting simulation...')
 
     for (let i = 1; i < 30; i++) {

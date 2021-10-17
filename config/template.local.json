@@ -7,7 +7,8 @@
     "order": {
         "size": 2,
         "expected_tokens": 15000,
-        "dummy (you can delete this line)": "you will be buying with order size (in BNB) the expected_amount of X tokens. eg. size=1.5 / expected_amount=8000 -> you will spend 1.5BNB to buy (at least) 8000 tokens."
+        "dummy (you can delete this line)": "you will be buying with order size (in BNB) the expected_amount of X tokens. eg. size=1.5 / expected_amount=8000 -> you will spend 1.5BNB to buy (at least) 8000 tokens.",
+        "dummy (you can delete this line)2": "size and expected_tokens can be floating point UP TO 3 DECIMAL PLACES. eg: 10.123 OK / 10.1234 ERROR."
     },
     "trigger": {
         "address": "your deployed trigger address. eg: 0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82"
@@ -17,8 +18,8 @@
         "pair_address": "address of the paired token in the LP. Probably WBNB (99%). eg: 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
     },
     "accounts": {
-        "admin": "admin is the administrator / deployer of the contracts. this address gets the final sniped tokens, refunds and interacts with the trigger (supplying bnb / calling it / etc). eg: 0x01effda1c981ca881818cb...18baac8",
-        "disperser": "disperser address is the one that spreads bnb for gas to the swarm (for calling later the snipe). can be admin address too."
+        "admin": "admin is the administrator / deployer of the contracts. this pk gets the final sniped tokens, refunds and interacts with the trigger (supplying bnb / calling it / etc). eg: 1a3eb3fcacddad1...18baac8",
+        "disperser": "disperser private key is the one that spreads bnb for gas to the swarm (for calling later the snipe). can be admin pk too."
     },
     "previewer": {
         "ext_order_size": 100,
@@ -32,6 +33,7 @@
         "path": "./config/bee_book.json",
         "dummy (you can delete this line)": "rounds is the number of cycles in pow2 of swarming. eg. 4 rounds = 16 accounts (2**4).", 
         "dummy (you can delete this line)2": "the more rounds, the more chances of frontrunning other bots you have, at the cost of more bnb spent in gas for txs",
-        "dummy (you can delete this line)3": "spread_amount is the bnb you will spread to the swarm so they can call the trigger when liquidity is added. As long as you provide smth that can suffice all txs then OK. If you provide more it will stay there and can be reused for other snipes (or be refunded back)"
+        "dummy (you can delete this line)3": "spread_amount is the bnb you will spread to the swarm so they can call the trigger when liquidity is added. As long as you provide smth that can suffice all txs then OK. If you provide more it will stay there and can be reused for other snipes (or be refunded back)",
+        "dummy (you can delete this line)4": "spread_amount can be floating point UP TO 3 DECIMAL PLACES. eg: 0.123 bnb OK / 0.1234 bnb ERROR."
     }
 }
