@@ -29,7 +29,11 @@
     },
     "scripts": {
         "deploy": "sudo truffle migrate --reset",
-        "deploy-testnet": "sudo truffle migrate --network bsctestnet"
+        "deploy-testnet": "sudo truffle migrate --network bsctestnet",
+        "order-preview": "ts-node scripts/order_preview.ts",
+        "create-swarm": "ts-node scripts/swarm_factory.ts",
+        "refund-swarm": "ts-node scripts/swarm_refund.ts",
+        "configure-trigger": "ts-node scripts/trigger_configurer.ts"
     },
     "keywords": [],
     "author": "",
