@@ -97,11 +97,11 @@ async function supplyTrigger(
 }
 
 async function configureTrigger(token: ethers.Contract, pair: string): Promise<void> {
+    const triggerAdminWallet = new ethers.Wallet(admin, bscProvider)
     const triggerAbi = [
         "function configureSnipe(address _tokenPaired, uint _amountIn, address _tknToBuy, uint _amountOutMin) external onlyOwner returns(bool)",
     ]
-    const trigger = new ethers.Contract(triggerAddress, triggerAbi, bscProvider)
-    const triggerAdminWallet = new ethers.Wallet(admin, bscProvider)
+    const trigger = new ethers.Contract(triggerAddress, triggerAbi, triggerAdminWallet)
     const orderAmount = BigNumber.from(orderSize).mul(10**18)
 
     let ok = await applyConfiguration(
