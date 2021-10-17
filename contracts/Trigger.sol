@@ -23,7 +23,7 @@ interface ICustomPCSRouter {
 contract Trigger is Ownable {
 
     // bsc variables 
-    address constant wbnb= 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
+    address constant wbnb = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
     address constant cakeFactory = 0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73;
 
     // eth variables 
@@ -56,14 +56,14 @@ contract Trigger is Ownable {
     // This contract uses a custtom router which is a copy of PCS router but with modified selectors, so that our tx are more difficult to listen than those directly going through PCS router.
     
     // perform the liquidity sniping
-    function snipeListing() external returns(bool success){
+    function snipeListing() external returns(bool success) {
         require(IERC20(wbnb).balanceOf(address(this)) >= wbnbIn, "snipe: not enough wbnb on the contract");
         IERC20(wbnb).approve(customRouter, wbnbIn);
         require(snipeLock == false, "snipe: sniping is locked. See configure");
         snipeLock = true;
         
         address[] memory path;
-        if (tokenPaired != wbnb){
+        if (tokenPaired != wbnb) {
             path = new address[](3);
             path[0] = wbnb;
             path[1] = tokenPaired;
@@ -84,47 +84,47 @@ contract Trigger is Ownable {
         return true;
     }
     
-    function getAdministrator() external view onlyOwner returns( address payable){
+    function getAdministrator() external view onlyOwner returns(address payable) {
         return administrator;
     }
 
-    function setAdministrator(address payable _newAdmin) external onlyOwner returns(bool success){
+    function setAdministrator(address payable _newAdmin) external onlyOwner returns(bool success) {
         administrator = _newAdmin;
         return true;
     }
     
-    function getCustomPCSRouter() external view onlyOwner returns(address){
+    function getCustomPCSRouter() external view onlyOwner returns(address) {
         return customRouter;
     }
     
-    function setCustomPCSRouter(address _newRouter) external onlyOwner returns(bool success){
+    function setCustomPCSRouter(address _newRouter) external onlyOwner returns(bool success) {
         customRouter = _newRouter;
         return true;
     }
     
     // must be called before sniping
-    function configureSnipe(address _tokenPaired, uint _amountIn, address _tknToBuy,  uint _amountOutMin) external onlyOwner returns(bool success){
+    function configureSnipe(address _tokenPaired, uint _amountIn, address _tknToBuy, uint _amountOutMin) external onlyOwner returns(bool success) {
         tokenPaired = _tokenPaired;
         wbnbIn = _amountIn;
         tokenToBuy = _tknToBuy;
-        minTknOut= _amountOutMin;
+        minTknOut = _amountOutMin;
         snipeLock = false;
         return true;
     }
     
-    function getSnipeConfiguration() external view onlyOwner returns(address, uint, address, uint, bool){
+    function getSnipeConfiguration() external view onlyOwner returns(address, uint, address, uint, bool) {
         return (tokenPaired, wbnbIn, tokenToBuy, minTknOut, snipeLock);
     }
     
     // here we precise amount param as certain bep20 tokens uses strange tax system preventing to send back whole balance
-    function emmergencyWithdrawTkn(address _token, uint _amount) external onlyOwner returns(bool success){
+    function emmergencyWithdrawTkn(address _token, uint _amount) external onlyOwner returns(bool success) {
         require(IERC20(_token).balanceOf(address(this)) >= _amount, "not enough tokens in contract");
         IERC20(_token).transfer(administrator, _amount);
         return true;
     }
     
     // shouldn't be of any use as receive function automatically wrap bnb incoming
-    function emmergencyWithdrawBnb() external onlyOwner returns(bool success){
+    function emmergencyWithdrawBnb() external onlyOwner returns(bool success) {
         require(address(this).balance >0 , "contract has an empty BNB balance");
         administrator.transfer(address(this).balance);
         return true;

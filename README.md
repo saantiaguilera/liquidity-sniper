@@ -1,6 +1,6 @@
 # AX-50 Liquidity Sniper
 
-This bot require you to run the GETH client + use the eth-brownie framework. All addresses and private keys contained have been changed for the sake of this public repo.
+This bot require you to run the GETH client + use ethers framework. All addresses and private keys contained have been changed for the sake of this public repo.
 
 This is heavily based on https://github.com/Supercycled/cake_sniper, so major thanks to him.
 
@@ -12,20 +12,32 @@ AX-50 is a frontrunning bot primarily aimed at liquidity sniping on AMM like Pan
 
 Being able to frontrun implies building on top of GETH client and having access to the mempool. My BSC node was running on AWS, hence the ax-50/config folder that I needed to send back and forth to the server with sniping config.
 
+The bot is divided in 2 sections:
+1. Configurations: An initial phase (previous to the snipe) where we configure the environment:
+  * A trigger contract which is setted up with the configuration of the token you want to snipe (token address, route of swap, amount, wallet address that receives, etc). 
+  * A swarm of accounts/wallets that will clogg the mempool once the liquidity is added, executing the snipe. This swarm of accounts is useful because we will be racing against other bots trying to frontrun the liquidity addition. So the more accounts trying the better the odds. Ideally one of all the accounts will succesfully snipe while the others will fail/revert (without doing nothing, except wasting gas).
+2. Sniping: An observation phase where we listen to txs in the mempool waiting for the liquidity addition to appear. Once we spot it we clogg the mempool with our own txs executing the trigger that will perform the snipe (one tx per account in the swarm). All txs have the same gas as the liquidity addition tx, so the mempool sets them (ideally) at the same priority as the liq. addition, hence frontrunning others.
+
 ## Setup
 
-Make sure to first deploy all contracts and configure them with your newly created addresses. You should configure:
-- Trigger custom router address with your CustomPCSRouter
+1. Make sure to first deploy all contracts using the truffle migrations. Running them should configure:
+- The trigger custom router address with your CustomPCSRouter
+- The trigger admin with the deployer wallet (this is important)
 
-I created the script scheduler.py which will run you through all the necessary steps to configure the bot. The configuration file of the scheduler is variables.py, so please be sure to adapt everything in variables.py to your own configuration.
+2. Create a `config/local.json` file following the template provided inside the directory (`config/template.local.json). This will be used by our scripts in the configuration phase.
 
-The scheduler walk you through 4 phases:
-- Expectations: helps you calculate the minimal amount of tokens you can expect with the snipe depending on the liquidity addition and your amount of WBNB. Feel free to tweak the variables according to your case and relaunch the script multiples times to test amountOutMin expectations.
+3. If you don't have a swarm yet, create one running `npm run create-swarm`. This should create a `config/bee_book.json` similar to the template one (`config/template.bee_book.json`)
 
-- Swarm: helps you by creating the accounts swarm and disperse the BNB/ETH to all of these accounts that will be used by the clogger at the end. You can chose the size of the swarm by a power of 2 depending of the rounds number you parametrize in variables.py. Note that > 256 accounts into the swarm starts too cause instability issues when the bot is triggered. 2 BNB is enough to fund 256 accounts and there is a "refund" function on the sript that allows for all the account to send back their dust BNB/ETH to you whenever you want. There is no such thing as BNB/ETH waste.
+4. \[Optional\] Preview the order you will create and snipe with `npm run order-preview`, to avoid undesired results.
 
-- Send the ax-50/config folder to the AWS server (you might not need it)
+5. Configure the trigger contract with the provided order running `npm run configure-trigger`
 
-- Trigger configuration: call configureSnipe on Trigger to arm the bot.
+6. \[Optional\] If you want to recover the spread bnb in the swarm, run `npm run swarm-refund`. Else leave it there for future snipes.
 
-That's it! the bot should be ready to snipe! The bot is currently defined to work with BSC and PancakeSwap. But you can adapt is to whatever EVM blockchain with its equivalent copy of Uniswap V2. To do this, just change the variables in the files variables.py and ax-50/config/config.go
+In future snipes, you can avoid most of the steps and just run step 2 & 5, configuring the trigger for a new snipe.
+
+## Usage
+
+If you have already configured the trigger contract, simply leave the geth client running with `go run cmd/ax-50/main.go`. Once the liquidity is added it should snipe it transparently.
+
+And that's it! the bot should be working without hassles! The bot is currently defined to work with BSC and PancakeSwap. But you can adapt is to whatever EVM blockchain with its equivalent copy of Uniswap V2. To do this, just change the variables in the config directory.
