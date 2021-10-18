@@ -16,15 +16,20 @@ import (
 // Before Anything, check /config/*.json to correctly parametrize the bot
 
 const (
-	configFolderEnv = "CONF_DIR" // env var for setting the config folder. This is /config usually.
-	configFile      = "configurations"
-	beeBookFile     = "bee_book"
+	configFolderEnv     = "CONF_DIR" // env var for setting the config folder. This is /config usually.
+	configFolderDefault = "config"
+	configFile          = "configurations"
+	beeBookFile         = "bee_book"
 )
 
 func main() {
 	ctx := context.Background()
 
-	conf, err := NewConfigFromFile(fmt.Sprintf("%s/%s.json", os.Getenv(configFolderEnv), configFile))
+	dir := os.Getenv(configFolderEnv)
+	if len(dir) == 0 {
+		dir = configFolderDefault
+	}
+	conf, err := NewConfigFromFile(fmt.Sprintf("%s/%s.json", dir, configFile))
 	if err != nil {
 		panic(err) // halt immediately
 	}
@@ -45,5 +50,6 @@ func main() {
 
 	txController := controller.NewTransaction(ethClient, txClassifierUseCase.Classify)
 
+	fmt.Println("> Igniting engine.")
 	NewEngine(rpcClient, txController).Run(ctx)
 }

@@ -38,6 +38,6 @@ In future snipes, you can avoid most of the steps and just run step 2 & 5, confi
 
 ## Usage
 
-If you have already configured the trigger contract, simply leave the geth client running with `go run cmd/ax-50/main.go`. Once the liquidity is added it should snipe it transparently.
+If you have already configured the trigger contract, simply leave the geth client running with `go run ./...`. Once the liquidity is added it should snipe it transparently.
 
 And that's it! the bot should be working without hassles! The bot is currently defined to work with BSC and PancakeSwap. But you can adapt is to whatever EVM blockchain with its equivalent copy of Uniswap V2. To do this, just change the variables in the config directory.

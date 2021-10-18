@@ -1,14 +1,14 @@
 {
   "addresses": {
-    "cake_factory": "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73",
-    "cake_router": "0x10ED43C718714eb63d5aA57B78B54704E256024E"
+    "cake_factory": "0x6725F303b657a9451d8BA641348b6761A6CC7a17",
+    "cake_router": "0xD99D1c33F9fC3444f8101754aBC46c52416550D1"
   },
   "sniper": {
-    "rpc": "https://data-seed-prebsc-2-s1.binance.org:8545/",
+    "rpc": "/home/ec2-user/geth/geth.ipc",
     "trigger": "0xedF6E087019459e8Edc06CcCDA2D3db1DfA0185C",
-    "base_currency": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+    "base_currency": "0x094616F0BdFB0b526bD735Bf66Eca0Ad254ca81F",
     "target_token": "0x9412F9AB702AfBd805DECe8e0627427461eF0602",
-    "minimum_liquidity": 0.2
+    "minimum_liquidity": 0.01
   },
   "monitors": {
     "address_list": {

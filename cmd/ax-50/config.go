@@ -23,11 +23,11 @@ type (
 	}
 
 	Sniper struct {
-		Trigger      string `json:"trigger"`
-		BaseCurrency string `json:"base_currency"`
-		TargetToken  string `json:"target_token"`
-		MinLiquidity int    `json:"minimum_liquidity"`
-		RPC          string `json:"rpc"`
+		Trigger      string  `json:"trigger"`
+		BaseCurrency string  `json:"base_currency"`
+		TargetToken  string  `json:"target_token"`
+		MinLiquidity float32 `json:"minimum_liquidity"`
+		RPC          string  `json:"rpc"`
 	}
 
 	Monitors struct {

@@ -32,7 +32,6 @@ func (e *Engine) Run(ctx context.Context) {
 
 	// Subscribe to receive one time events for new txs
 	_, err := e.client.EthSubscribe(ctx, ch, "newPendingTransactions")
-
 	if err != nil {
 		panic(err)
 	}

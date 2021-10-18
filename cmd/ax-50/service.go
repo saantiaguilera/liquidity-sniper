@@ -87,7 +87,11 @@ func newPCSFactory(conf *Config, ethClient *ethclient.Client) *pancake.IPancakeF
 }
 
 func newBees(ctx context.Context, ethClient *ethclient.Client) []*service.Bee {
-	b, err := os.ReadFile(fmt.Sprintf("%s/%s.json", os.Getenv(configFolderEnv), beeBookFile))
+	dir := os.Getenv(configFolderEnv)
+	if len(dir) == 0 {
+		dir = configFolderDefault
+	}
+	b, err := os.ReadFile(fmt.Sprintf("%s/%s.json", dir, beeBookFile))
 	if err != nil {
 		panic(err)
 	}
