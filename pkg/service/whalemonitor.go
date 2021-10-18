@@ -24,7 +24,7 @@ func NewWhaleMonitor(m *big.Int) *WhaleMonitor {
 func (m *WhaleMonitor) Monitor(ctx context.Context, tx *types.Transaction) {
 	if tx.Value().Cmp(m.MinThreshold) == 1 {
 		log.Info(fmt.Sprintf(
-			"[WhaleMonitor] Transfer detected:\n    Hash: %v\n    Value:%v",
+			"[WhaleMonitor] Transfer detected:\n    Hash: %v\n    Value: %v",
 			tx.Hash().Hex(),
 			formatETHWeiToEther(tx.Value()),
 		))

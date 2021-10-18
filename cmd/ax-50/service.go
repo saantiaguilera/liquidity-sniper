@@ -25,8 +25,8 @@ type (
 	}
 )
 
-func newRPCClient(ctx context.Context, conf *Config) *rpc.Client {
-	rpcClient, err := rpc.DialContext(ctx, conf.Sniper.RPC)
+func newRPCClient(ctx context.Context, rpcURL string) *rpc.Client {
+	rpcClient, err := rpc.DialContext(ctx, rpcURL)
 	if err != nil {
 		panic(err)
 	}

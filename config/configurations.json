@@ -1,14 +1,16 @@
 {
   "addresses": {
-    "cake_factory": "0x6725F303b657a9451d8BA641348b6761A6CC7a17",
-    "cake_router": "0xD99D1c33F9fC3444f8101754aBC46c52416550D1"
+    "cake_factory": "0x6725F303b657a9451d8BA641348b6761A6CC7a17 -> cake factory address in the provided chain",
+    "cake_router": "0xD99D1c33F9fC3444f8101754aBC46c52416550D1 -> cake router address in the provided chain"
   },
   "sniper": {
-    "rpc": "/home/ec2-user/geth/geth.ipc",
-    "trigger": "0xedF6E087019459e8Edc06CcCDA2D3db1DfA0185C",
-    "base_currency": "0x094616F0BdFB0b526bD735Bf66Eca0Ad254ca81F",
-    "target_token": "0x9412F9AB702AfBd805DECe8e0627427461eF0602",
-    "minimum_liquidity": 0.01
+    "rpc_read": "rpc to read/stream txs from the mempool, should be an ipc or wss node. MUST HAVE SAME CHAIN ID AS rpc_write!!",
+    "rpc_write": "rpc to write/push/broadcast our txs to the nodes, can be ipc/wss or http. Can be the same as the read one or simply a known one eg. https://data-seed-prebsc-2-s2.binance.org:8545/",
+    "trigger": "0xedF6E087019459e8Edc06CcCDA2D3db1DfA0185C -> deployed trigger address",
+    "base_currency": "0x094616F0BdFB0b526bD735Bf66Eca0Ad254ca81F -> paired token address. The one they are adding liquidity with. WBNB address most probably.",
+    "target_token": "0x9412F9AB702AfBd805DECe8e0627427461eF0602 -> target token address. The one you will buy on the snipe",
+    "minimum_liquidity": 0.01,
+    "TEMPLATE. YOU CAN DELETE THIS LINE": "minimum_liquidity is the minimum amount you expect as collateral (the paired asset, eg WBNB) to be added in the addLiquidity tx so we snipe. This is because sometimes devs or other people add liquidity on their own to trigger bots or scam (but add way less liq. than the expected). If the addLiquidity has less than the min provided here, we don't snipe"
   },
   "monitors": {
     "address_list": {
@@ -16,11 +18,11 @@
       "list": [
         {
           "name": "address_to_monitor_1",
-          "addr": "0xBf66A7848f96a7dddeC6140d1CaA8eddFFE0DeaB"
+          "addr": "0xBf66A7848f96a7dddeC6140d1CaA8eddFFE0DeaB -> you can monitor certain addresses to see what they do. Eg. team / contract owners / etc of the token to see if they are doing shady stuff"
         },
         {
           "name": "address_to_monitor_2",
-          "addr": "0xcdb74F11592b66c2858f1d51ad7C87ba7b00fe897"
+          "addr": "0xcdb74F11592b66c2858f1d51ad7C87ba7b00fe897 -> or simply monitor an address because you want to see what it does.. ydy"
         },
         {
           "name": "wault",
@@ -30,7 +32,7 @@
     },
     "whale": {
       "enabled": false,
-      "min": "50000000000000000000"
+      "min": "50000000000000000000 -> number in string. if a tx sends more than this as its value (value: x in tx), then we capture it"
     }
   }
 }

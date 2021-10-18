@@ -27,7 +27,8 @@ type (
 		BaseCurrency string  `json:"base_currency"`
 		TargetToken  string  `json:"target_token"`
 		MinLiquidity float32 `json:"minimum_liquidity"`
-		RPC          string  `json:"rpc"`
+		RPCRead      string  `json:"rpc_read"`
+		RPCWrite     string  `json:"rpc_write"`
 	}
 
 	Monitors struct {

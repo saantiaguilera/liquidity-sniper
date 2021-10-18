@@ -34,10 +34,12 @@ The bot is divided in 2 sections:
 
 6. \[Optional\] If you want to recover the spread bnb in the swarm, run `npm run swarm-refund`. Else leave it there for future snipes.
 
-In future snipes, you can avoid most of the steps and just run step 2 & 5, configuring the trigger for a new snipe.
+7. Configure the `config/configurations.json` file, which will be used at the 'sniping' phase. It's important to have a read and write node where you will stream de mempool txs (read) and write your own ones once the addLiquidity one is found. So bear in mind you will need to either set up your own node or get one from somewhere.
+
+In future snipes, you can avoid most of the steps and just run step 2 & 5 & 7, configuring the trigger for a new snipe.
 
 ## Usage
 
-If you have already configured the trigger contract, simply leave the geth client running with `go run ./...`. Once the liquidity is added it should snipe it transparently.
+If you have already configured the trigger contract, simply leave the client running with `go run ./...`. Once the liquidity is added it should snipe it transparently.
 
 And that's it! the bot should be working without hassles! The bot is currently defined to work with BSC and PancakeSwap. But you can adapt is to whatever EVM blockchain with its equivalent copy of Uniswap V2. To do this, just change the variables in the config directory.

@@ -36,20 +36,36 @@ func main() {
 
 	log.Info(fmt.Sprintf("Configurations parsed: %+v\n", conf))
 
-	rpcClient := newRPCClient(ctx, conf)
-	ethClient := ethclient.NewClient(rpcClient)
-	sniper := newSniperEntity(ctx, conf, ethClient)
+	rpcClientRead := newRPCClient(ctx, conf.Sniper.RPCRead)
+	rpcClientWrite := newRPCClient(ctx, conf.Sniper.RPCWrite)
+	ethClientRead := ethclient.NewClient(rpcClientRead)
+	ethClientWrite := ethclient.NewClient(rpcClientWrite)
+
+	chainIDRead, err := ethClientRead.NetworkID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	chainIDWrite, err := ethClientWrite.NetworkID(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	if chainIDRead.Cmp(chainIDWrite) != 0 {
+		panic("expected read and write clients on same chain id")
+	}
+
+	sniper := newSniperEntity(ctx, conf, ethClientWrite)
 	monitors := newMonitors(conf, sniper)
-	pcsFactory := newPCSFactory(conf, ethClient)
-	swarm := newBees(ctx, ethClient)
+	pcsFactory := newPCSFactory(conf, ethClientWrite)
+	swarm := newBees(ctx, ethClientWrite)
 	monitorEngine := service.NewMonitorEngine(monitors...)
-	sniperClient := service.NewSniper(ethClient, pcsFactory, swarm, sniper)
-	uniLiquidityClient := newUniswapLiquidityClient(ethClient, sniperClient, sniper)
+	sniperClient := service.NewSniper(ethClientWrite, pcsFactory, swarm, sniper)
+	uniLiquidityClient := newUniswapLiquidityClient(ethClientWrite, sniperClient, sniper)
 
 	txClassifierUseCase := newTxClassifierUseCase(conf, monitorEngine, uniLiquidityClient)
 
-	txController := controller.NewTransaction(ethClient, txClassifierUseCase.Classify)
+	txController := controller.NewTransaction(ethClientRead, txClassifierUseCase.Classify)
 
 	fmt.Println("> Igniting engine.")
-	NewEngine(rpcClient, txController).Run(ctx)
+	NewEngine(rpcClientRead, txController).Run(ctx)
 }
