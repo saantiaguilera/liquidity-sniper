@@ -66,7 +66,7 @@ async function disperse(wallet: ethers.Wallet, amount: BigNumber, gasPrice: BigN
     console.log(`  Tx supplying BNB for bee ${bee.address}: ${hash}`)
     const receipt = await bscProvider.waitForTransaction(hash);
     if (receipt.status != 1) {
-        console.log(` [WARNING] Tx ${hash} failed at ${wallet.address} for new bee ${bee.address}: ${receipt}`)
+        console.log(` [WARNING] Tx ${hash} failed at ${wallet.address} for new bee ${bee.address}: ${JSON.stringify(receipt)}`)
         return null
     }
     return bee

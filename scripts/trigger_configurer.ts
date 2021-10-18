@@ -1,11 +1,10 @@
 import { 
     chain, order, trigger, token, accounts
 } from '../config/local.json';
-import { ethers, utils } from "ethers";
+import { ethers } from "ethers";
 import { BigNumber } from '@ethersproject/bignumber';
 import * as readline from 'readline';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
-import { exit } from 'process';
 
 const orderSize = order.size;
 const minimumTokens = order.expected_tokens;
@@ -56,7 +55,7 @@ async function applyConfiguration(
     console.log(`\n> Trigger configuration submitted: ${hash}`)
     const receipt = await bscProvider.waitForTransaction(hash);
     if (receipt.status != 1) {
-        console.log(` [ERROR] Tx ${hash} failed: ${receipt}`)
+        console.log(` [ERROR] Tx ${hash} failed: ${JSON.stringify(receipt)}`)
         return false
     }
     console.log(`  Applied configuration succesfully.`)

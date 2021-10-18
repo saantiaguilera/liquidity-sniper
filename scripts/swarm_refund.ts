@@ -46,7 +46,7 @@ async function refund(me: ethers.Wallet, bee: Bee): Promise<any> {
         console.log(`  Tx for bee ${bee.addr}: ${hash}`)
         const receipt = await bscProvider.waitForTransaction(hash);
         if (receipt.status != 1) {
-            console.log(` [WARNING] Tx ${hash} failed at ${bee.addr}: ${receipt}`)
+            console.log(` [WARNING] Tx ${hash} failed at ${bee.addr}: ${JSON.stringify(receipt)}`)
         }
     }
 }
