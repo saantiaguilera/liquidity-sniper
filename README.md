@@ -43,3 +43,9 @@ In future snipes, you can avoid most of the steps and just run step 2 & 5 & 7, s
 If you have already configured the trigger contract, simply leave the client running with `go run ./...`. Once the liquidity is added it should snipe it transparently.
 
 And that's it! the bot should be working without hassles! The bot is currently defined to work with BSC and PancakeSwap. But you can adapt is to whatever EVM blockchain with its equivalent copy of Uniswap V2. To do this, just change the variables in the config directory + contracts.
+
+## Donations
+
+If you found the bot useful and you want to share some of those juicy profits with me, I accept donations through BEP20 (BSC) at `0x8f5d3374373aDA8b2c201C5cAc4c384FD42d2390` in any type of token (hopefully one with liquidity hehe)
+
+Cheers and happy sniping!
