@@ -1,7 +1,8 @@
 {
   "addresses": {
     "cake_factory": "0x6725F303b657a9451d8BA641348b6761A6CC7a17 -> cake factory address in the provided chain",
-    "cake_router": "0xD99D1c33F9fC3444f8101754aBC46c52416550D1 -> cake router address in the provided chain"
+    "cake_router": "0xD99D1c33F9fC3444f8101754aBC46c52416550D1 -> cake router address in the provided chain",
+    "wbnb": "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd -> wbnb address in the provided chain"
   },
   "sniper": {
     "rpc_read": "rpc to read/stream txs from the mempool, should be an ipc or wss node. MUST HAVE SAME CHAIN ID AS rpc_write!!",

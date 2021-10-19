@@ -1,15 +1,29 @@
 I want to test this in a testnet first!
 
-Great! We have to do a few changes first:
-1. In trigger contract, change address of wbnb to the testnet one
-2. In CustomPCSRouter contract, change address of pcs factory and WETH to the testnet ones.
-3. Here it gets tricky, look for the PCS factory abi and it should have a INIT_CODE_PAIR_HASH constant (which is the contract creationCode we will use to avoid looking up pairs in the contract and simply create their address through a keccak with CREATE2)
-4. Once you have the creationCode of the factory contract, go to the PancakeLibrary contract and change the init code hash to the one you got (it's a hex, so remove the 0x)
-5. Change all info in your local.json and configuration.json config files for the testnet variants.
+Great! Simply change all info in your local.json and configuration.json config files for the testnet variants, and follow the procedures for a normal usage.
 
 Thats it! Now you can simulate the complete flow on your own, testing everything.
 
 ## Useful scripts
+
+Here is some compilation of useful scripts I tend to use a lot when testing myself, might help you out too.
+
+### Addresses
+
+Copy pastable addresses for mainnet/testnet
+```
+Mainnet:
+Pancake Factory:   0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73
+Pancake Router:    0x10ED43C718714eb63d5aA57B78B54704E256024E
+WBNB:              0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c
+creationCode Hash: 0x00fb7f630766e6a796048ea87d01acd3068e8ff67d078148a3fa3f4a84f69bd5
+
+Testnet:
+Pancake Factory:   0x6725F303b657a9451d8BA641348b6761A6CC7a17
+Pancake Router:    0xD99D1c33F9fC3444f8101754aBC46c52416550D1
+WBNB:              0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd
+creationCode Hash: 0xd0d4c4cd0848c93cb4fd1f498d7013ee6bfb25783ea21593d5834f5d250ece66
+```
 
 ### ERC20 Contract creations
 ```

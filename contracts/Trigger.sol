@@ -22,11 +22,7 @@ interface ICustomPCSRouter {
 
 contract Trigger is Ownable {
 
-    // bsc variables 
-    address constant wbnb = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
-
-    // bsc testnet variables
-    // address constant wbnb = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
+    address private wbnb;
 
     address payable private administrator;
     address private customRouter;
@@ -39,8 +35,9 @@ contract Trigger is Ownable {
 
     bool private snipeLock;
 
-    constructor() public {
+    constructor(address _wbnb) public {
         administrator = payable(msg.sender);
+        wbnb = _wbnb;
     }
     
     receive() external payable {
@@ -97,6 +94,15 @@ contract Trigger is Ownable {
     function setCustomPCSRouter(address _newRouter) external onlyOwner returns(bool success) {
         customRouter = _newRouter;
         return true;
+    }
+
+    function setWBNBAddress(address _wbnb) external onlyOwner returns(bool success) {
+        wbnb = _wbnb;
+        return true;
+    }
+
+    function getWBNBAddress() external view onlyOwner returns(address) {
+        return wbnb;
     }
     
     // must be called before sniping
