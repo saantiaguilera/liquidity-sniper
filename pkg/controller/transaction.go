@@ -2,11 +2,12 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-
-	"github.com/saantiaguilera/liquidity-sniper/pkg/domain"
+	"github.com/ethereum/go-ethereum/log"
 )
 
 type (
@@ -35,12 +36,16 @@ func (c *Transaction) Snipe(ctx context.Context, h common.Hash) error {
 	tx, pending, err := c.resolver.TransactionByHash(ctx, h)
 
 	if err != nil {
-		return err // nothing to do.
+		if err == ethereum.NotFound {
+			return nil // don't track. probably a failed tx
+		}
+		return fmt.Errorf("error getting tx %s by hash: %s", h, err) // nothing to do.
 	}
 
 	// If tx is valid and still unconfirmed
 	if pending {
 		return c.handler(ctx, tx)
 	}
-	return domain.ErrTxAlreadyConfirmed
+	log.Debug("tx already confirmed")
+	return nil
 }

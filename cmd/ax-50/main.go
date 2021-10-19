@@ -20,9 +20,12 @@ const (
 	configFolderDefault = "config"
 	configFile          = "configurations"
 	beeBookFile         = "bee_book"
+
+	logLevel = log.LvlDebug
 )
 
 func main() {
+	configureLog(logLevel)
 	ctx := context.Background()
 
 	dir := os.Getenv(configFolderEnv)

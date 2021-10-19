@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rpc"
 
 	"github.com/saantiaguilera/liquidity-sniper/pkg/domain"
@@ -19,11 +20,27 @@ import (
 
 type (
 	bee struct {
-		ID      int    `json:"id"`
-		Address string `json:"address"`
+		Address string `json:"addr"`
 		PK      string `json:"pk"`
 	}
+
+	logHandler struct {
+		format log.Format
+	}
 )
+
+func (l *logHandler) Log(r *log.Record) error {
+	fmt.Println(string(l.format.Format(r)))
+	return nil
+}
+
+func configureLog(level log.Lvl) {
+	glog := log.NewGlogHandler(&logHandler{
+		format: log.TerminalFormat(true),
+	})
+	glog.Verbosity(level)
+	log.Root().SetHandler(glog)
+}
 
 func newRPCClient(ctx context.Context, rpcURL string) *rpc.Client {
 	rpcClient, err := rpc.DialContext(ctx, rpcURL)
@@ -53,7 +70,7 @@ func newSniperEntity(ctx context.Context, conf *Config, ethClient *ethclient.Cli
 }
 
 func newMonitors(conf *Config, sniper domain.Sniper) []service.Monitor {
-	monitors := make([]service.Monitor, 2)
+	monitors := make([]service.Monitor, 0, 2)
 
 	if conf.Monitors.AddressListMonitor.Enabled {
 		l := make([]domain.NamedAddress, len(conf.Monitors.AddressListMonitor.List))
@@ -109,12 +126,16 @@ func newBees(ctx context.Context, ethClient *ethclient.Client) []*service.Bee {
 		if err != nil {
 			panic(err)
 		}
+		if pn == 0 {
+			pn++
+		}
 
 		rawPK, err := crypto.HexToECDSA(bee.PK[2:])
 		if err != nil {
 			panic(err)
 		}
 
+		log.Info(fmt.Sprintf("creating bee %s with nonce: %d", bee.Address, pn))
 		res[i] = service.NewBee(rawPK, pn)
 	}
 

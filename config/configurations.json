@@ -6,7 +6,7 @@
   "sniper": {
     "rpc_read": "rpc to read/stream txs from the mempool, should be an ipc or wss node. MUST HAVE SAME CHAIN ID AS rpc_write!!",
     "rpc_write": "rpc to write/push/broadcast our txs to the nodes, can be ipc/wss or http. Can be the same as the read one or simply a known one eg. https://data-seed-prebsc-2-s2.binance.org:8545/",
-    "trigger": "0xedF6E087019459e8Edc06CcCDA2D3db1DfA0185C -> deployed trigger address",
+    "trigger": "0x593f804a98c7cfa00f55ccfd8e8dade3d7b2c3b5 -> deployed trigger address",
     "base_currency": "0x094616F0BdFB0b526bD735Bf66Eca0Ad254ca81F -> paired token address. The one they are adding liquidity with. WBNB address most probably.",
     "target_token": "0x9412F9AB702AfBd805DECe8e0627427461eF0602 -> target token address. The one you will buy on the snipe",
     "minimum_liquidity": 0.01,

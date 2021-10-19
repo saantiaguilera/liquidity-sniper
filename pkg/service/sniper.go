@@ -120,8 +120,6 @@ func (c *Sniper) Snipe(ctx context.Context, gas *big.Int) error {
 		wg.Wait()
 		close(pendingTxRes)
 
-		log.Info(fmt.Sprintf("%d txs sent. Checking status...", len(c.swarm)))
-
 		finishedTxRes := make(chan txRes, len(pendingTxRes))
 		wg.Add(len(pendingTxRes))
 
@@ -157,7 +155,7 @@ func (c *Sniper) Snipe(ctx context.Context, gas *big.Int) error {
 						}
 
 						log.Info(fmt.Sprintf(
-							"sniping success!!!\nhash: %s\ntoken: %s\npairAddress: %s\namount bought: %.4f",
+							"sniping success!!!\n  hash: %s\n  token: %s\n  pairAddress: %s\n  amount bought: %.4f",
 							res.Hash.String(),
 							c.sniperTTBAddr.String(),
 							pairAddress.String(),
@@ -194,6 +192,13 @@ func (c *Sniper) formatERC20Decimals(tokensSent *big.Int, tokenAddress common.Ad
 
 // once all tx has been sent, check for status and feed StatusResults and WatchPending chan that are listening
 func (c *Sniper) checkTxStatus(ctx context.Context, txHash common.Hash) txRes {
+	if txHash == common.HexToHash(nullHash) {
+		return txRes{
+			Hash:    txHash,
+			Success: false,
+			Receipt: nil,
+		}
+	}
 
 	t := time.NewTicker(500 * time.Millisecond)
 	defer t.Stop()
@@ -208,7 +213,7 @@ func (c *Sniper) checkTxStatus(ctx context.Context, txHash common.Hash) txRes {
 		}
 
 		if err != nil {
-			log.Info(err.Error())
+			log.Error(fmt.Sprintf("error getting tx by hash %s: %s", txHash.String(), err))
 		}
 
 		// fail fast after 5s
@@ -225,7 +230,7 @@ func (c *Sniper) checkTxStatus(ctx context.Context, txHash common.Hash) txRes {
 	receipt, err := c.ethClient.TransactionReceipt(ctx, txHash)
 
 	if err != nil {
-		log.Info(err.Error())
+		log.Error(fmt.Sprintf("error getting tx receipt %s: %s", txHash.String(), err.Error()))
 		return txRes{
 			Hash:    txHash,
 			Success: false,
@@ -247,18 +252,20 @@ func (c *Sniper) execute(ctx context.Context, bee *Bee, gasPrice *big.Int) commo
 	// sign the tx
 	signedTxBee, err := types.SignTx(txBee, types.NewEIP155Signer(c.sniperChainID), bee.RawPK)
 	if err != nil {
-		log.Info(fmt.Sprintf("sendBee: problem with signedTxBee: %s", err))
+		log.Error(fmt.Sprintf("sendBee: problem with signedTxBee: %s", err))
+		return common.HexToHash(nullHash)
 	}
 
-	// send the tx
 	// TODO Ctx timeout?
 	err = c.ethClient.SendTransaction(ctx, signedTxBee)
 
 	if err != nil {
-		log.Info(fmt.Sprintf("error sending tx: %s", err.Error()))
+		log.Error(fmt.Sprintf("error sending tx: %s", err.Error()))
 		return common.HexToHash(nullHash)
 	}
 	log.Info(fmt.Sprintf("sent tx: %s", signedTxBee.Hash().Hex()))
+	bee.PendingNonce++ // increment nonce for next one
+
 	return signedTxBee.Hash()
 }
 

@@ -24,17 +24,10 @@ contract Trigger is Ownable {
 
     // bsc variables 
     address constant wbnb = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
-    address constant cakeFactory = 0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73;
 
     // bsc testnet variables
-    // address constant wbnb = 0x094616F0BdFB0b526bD735Bf66Eca0Ad254ca81F;
-    // address constant cakeFactory = 0x6725F303b657a9451d8BA641348b6761A6CC7a17;
+    // address constant wbnb = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
 
-    // eth variables 
-    // address constant wbnb= 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-    // address constant cakeRouter = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
-    // address constant cakeFactory = 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f;
-    
     address payable private administrator;
     address private customRouter;
 

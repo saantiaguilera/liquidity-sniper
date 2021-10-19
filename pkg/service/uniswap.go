@@ -145,7 +145,7 @@ func (u *UniswapLiquidity) getTokenSymbol(tokenAddress common.Address) string {
 	tokenIntance, _ := erc20.NewErc20(tokenAddress, u.ethClient)
 	sym, err := tokenIntance.Symbol(nil)
 	if err != nil {
-		return err.Error()
+		return fmt.Sprintf("error getting token symbol of %s: %s", tokenAddress.String(), err)
 	}
 	return sym
 }
@@ -153,7 +153,7 @@ func (u *UniswapLiquidity) getTokenSymbol(tokenAddress common.Address) string {
 func (u *UniswapLiquidity) Add(ctx context.Context, tx *types.Transaction) error {
 	sender, err := u.getTxSenderAddressQuick(tx)
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting sender address: %s", err)
 	}
 
 	// parse the info of the swap so that we can access it easily
@@ -166,7 +166,7 @@ func (u *UniswapLiquidity) Add(ctx context.Context, tx *types.Transaction) error
 		if addLiquidity.TokenAddressA == u.sniperTokenPaired || addLiquidity.TokenAddressB == u.sniperTokenPaired {
 			tknBalanceSender, err := u.sniperTTBTkn.BalanceOf(nil, sender)
 			if err != nil {
-				return err
+				return fmt.Errorf("error getting balance of token to buy: %s", err)
 			}
 
 			var amountTknMin *big.Int
@@ -183,6 +183,7 @@ func (u *UniswapLiquidity) Add(ctx context.Context, tx *types.Transaction) error
 			if checkBalanceTknLP == 0 || checkBalanceTknLP == -1 {
 				// we check if the liquidity provider add enough collateral (WBNB or BUSD) as expected by our configuration. Bc sometimes the dev fuck the pleb and add way less liquidity that was advertised on telegram.
 				if amountPairedMin.Cmp(u.sniperMinLiq) == 1 {
+					log.Info(fmt.Sprintf("snipe executed for tx: %s", tx.Hash().String()))
 					return u.sniperClient.Snipe(ctx, tx.GasPrice())
 				} else {
 					log.Info(fmt.Sprintf(
@@ -204,14 +205,14 @@ func (u *UniswapLiquidity) AddETH(ctx context.Context, tx *types.Transaction) er
 	// parse the info of the swap so that we can access it easily
 	sender, err := u.getTxSenderAddressQuick(tx)
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting sender address: %s", err)
 	}
 
 	addLiquidity := u.newETHInputFromTx(tx)
 
 	tknBalanceSender, err := u.sniperTTBTkn.BalanceOf(nil, sender)
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting balance of token to buy: %s", err)
 	}
 
 	checkBalanceLP := addLiquidity.AmountTokenMin.Cmp(tknBalanceSender)
@@ -224,6 +225,7 @@ func (u *UniswapLiquidity) AddETH(ctx context.Context, tx *types.Transaction) er
 			// we check if the liquidity provider add enough collateral (WBNB or BUSD) as expected by our configuration. Bc sometimes the dev fuck the pleb and add way less liquidity that was advertised on telegram.
 			if tx.Value().Cmp(u.sniperMinLiq) == 1 {
 				if addLiquidity.AmountETHMin.Cmp(u.sniperMinLiq) == 1 {
+					log.Info(fmt.Sprintf("snipe executed for tx: %s", tx.Hash().String()))
 					return u.sniperClient.Snipe(ctx, tx.GasPrice())
 				}
 			} else {

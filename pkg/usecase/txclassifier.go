@@ -2,11 +2,11 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/ethereum/go-ethereum/core/types"
-
-	"github.com/saantiaguilera/liquidity-sniper/pkg/domain"
+	"github.com/ethereum/go-ethereum/log"
 )
 
 type (
@@ -39,10 +39,9 @@ func NewTransactionClassifier(
 
 func (u *TransactionClassifier) Classify(ctx context.Context, tx *types.Transaction) error {
 	if tx.To() == nil {
-		return domain.ErrTxIsContract
+		log.Trace("tx is a contract deploy: " + tx.Hash().String())
+		return nil
 	}
-
-	//TODO: is calling sender() here needed?
 
 	u.monitor(ctx, tx)
 
@@ -56,6 +55,10 @@ func (u *TransactionClassifier) Classify(ctx context.Context, tx *types.Transact
 		if h, ok := u.strategies[txFunctionHash]; ok {
 			return h(ctx, tx)
 		}
+		log.Debug("found contract call to provided router address but not to a method we are looking for: " + tx.Hash().String())
+		return nil
 	}
-	return domain.ErrTxDoesntApply
+
+	log.Trace(fmt.Sprintf("tx %s doesn't apply", tx.Hash().String()))
+	return nil
 }
