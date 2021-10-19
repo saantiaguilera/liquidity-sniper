@@ -8,7 +8,6 @@ import (
 	"math/big"
 	"runtime/debug"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -32,7 +31,7 @@ var (
 
 type (
 	Sniper struct {
-		park *int32
+		mut *sync.Mutex
 
 		factoryClient sniperFactoryClient // eg. PCS
 		ethClient     sniperETHClient
@@ -76,9 +75,8 @@ func NewSniper(
 	sn domain.Sniper,
 ) *Sniper {
 
-	p := int32(0)
 	return &Sniper{
-		park:              &p,
+		mut:               new(sync.Mutex),
 		ethClient:         e,
 		factoryClient:     f,
 		swarm:             s,
@@ -100,73 +98,76 @@ func NewBee(
 	}
 }
 
+// Snipe cloggs the mempool triggering our Trigger contract for performing the swap
+//   gas provided will be used on all txs. It's ideal to use the same gas as the addLiq tx so our txs gets the same priority as the addLiq one
+//
+// Snipe is concurrently safe
 func (c *Sniper) Snipe(ctx context.Context, gas *big.Int) error {
-	if atomic.CompareAndSwapInt32(c.park, 0, 1) {
-		defer atomic.SwapInt32(c.park, 0) // compensate always.
+	c.mut.Lock()
+	defer c.mut.Unlock()
 
-		wg := new(sync.WaitGroup)
-		wg.Add(len(c.swarm))
+	wg := new(sync.WaitGroup)
+	wg.Add(len(c.swarm))
 
-		pendingTxRes := make(chan common.Hash, len(c.swarm))
+	pendingTxRes := make(chan common.Hash, len(c.swarm))
 
-		for _, b := range c.swarm {
-			go func(ctx context.Context, b *Bee, wg *sync.WaitGroup, gas *big.Int, h chan<- common.Hash) {
-				defer recovery()
-				defer wg.Done()
-				h <- c.execute(ctx, b, gas)
-			}(ctx, b, wg, gas, pendingTxRes)
-		}
+	for _, b := range c.swarm {
+		go func(ctx context.Context, b *Bee, wg *sync.WaitGroup, gas *big.Int, h chan<- common.Hash) {
+			defer recovery()
+			defer wg.Done()
+			h <- c.execute(ctx, b, gas)
+		}(ctx, b, wg, gas, pendingTxRes)
+	}
 
-		wg.Wait()
-		close(pendingTxRes)
+	wg.Wait()
+	close(pendingTxRes)
 
-		finishedTxRes := make(chan txRes, len(pendingTxRes))
-		wg.Add(len(pendingTxRes))
+	finishedTxRes := make(chan txRes, len(pendingTxRes))
+	wg.Add(len(pendingTxRes))
 
-		for txHash := range pendingTxRes {
-			go func(ctx context.Context, h common.Hash, wg *sync.WaitGroup, ch chan<- txRes) {
-				defer recovery()
-				defer wg.Done()
-				ch <- c.checkTxStatus(ctx, h)
-			}(ctx, txHash, wg, finishedTxRes)
-		}
+	for txHash := range pendingTxRes {
+		go func(ctx context.Context, h common.Hash, wg *sync.WaitGroup, ch chan<- txRes) {
+			defer recovery()
+			defer wg.Done()
+			ch <- c.checkTxStatus(ctx, h)
+		}(ctx, txHash, wg, finishedTxRes)
+	}
 
-		wg.Wait()
-		close(finishedTxRes)
+	wg.Wait()
+	close(finishedTxRes)
 
-		for res := range finishedTxRes {
-			if res.Success {
-				// proudly displaying the tx receipt
-				for _, l := range res.Receipt.Logs {
-					if l.Address == c.sniperTTBAddr {
-						hexAmount := hex.EncodeToString(l.Data)
-						var value = new(big.Int)
-						value.SetString(hexAmount, 16)
-						amountBought, err := c.formatERC20Decimals(value, c.sniperTTBAddr)
-						if err != nil {
-							log.Info(fmt.Sprintf("sniping succeeded! but we couldn't get the bought balance: %s", err))
-							continue
-						}
-
-						pairAddress, err := c.factoryClient.GetPair(&bind.CallOpts{}, c.sniperTTBAddr, c.sniperTokenPaired)
-						if err != nil {
-							log.Info(fmt.Sprintf("sniping succeeded! but we couldn't get the pair bought: %s", err))
-							continue
-						}
-
-						log.Info(fmt.Sprintf(
-							"sniping success!!!\n  hash: %s\n  token: %s\n  pairAddress: %s\n  amount bought: %.4f",
-							res.Hash.String(),
-							c.sniperTTBAddr.String(),
-							pairAddress.String(),
-							amountBought,
-						))
+	for res := range finishedTxRes {
+		if res.Success {
+			// proudly displaying the tx receipt
+			for _, l := range res.Receipt.Logs {
+				if l.Address == c.sniperTTBAddr {
+					hexAmount := hex.EncodeToString(l.Data)
+					var value = new(big.Int)
+					value.SetString(hexAmount, 16)
+					amountBought, err := c.formatERC20Decimals(value, c.sniperTTBAddr)
+					if err != nil {
+						log.Info(fmt.Sprintf("sniping succeeded! but we couldn't get the bought balance: %s", err))
+						continue
 					}
+
+					pairAddress, err := c.factoryClient.GetPair(&bind.CallOpts{}, c.sniperTTBAddr, c.sniperTokenPaired)
+					if err != nil {
+						log.Info(fmt.Sprintf("sniping succeeded! but we couldn't get the pair bought: %s", err))
+						continue
+					}
+
+					log.Info(fmt.Sprintf(
+						"sniping success!!!\n  hash: %s\n  token: %s\n  pairAddress: %s\n  amount bought: %.4f",
+						res.Hash.String(),
+						c.sniperTTBAddr.String(),
+						pairAddress.String(),
+						amountBought,
+					))
 				}
 			}
 		}
 	}
-	return nil
+	return nil // TODO Add formal error handling in case snipe doesn't succeeds
 }
 
 // Format # of tokens transferred into required float

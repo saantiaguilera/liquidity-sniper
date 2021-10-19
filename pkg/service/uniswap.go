@@ -178,7 +178,7 @@ func (u *UniswapLiquidity) Add(ctx context.Context, tx *types.Transaction) error
 				amountTknMin = addLiquidity.AmountTokenBMin
 				amountPairedMin = addLiquidity.AmountTokenAMin
 			}
-			// we check if the liquidity provider really possess the liquidity he wants to add, because it is possible tu be lured by other bots that fake liquidity addition.
+			// we check if the liquidity provider really possess the liquidity he wants to add, because it is possible to be lured by other bots that fake liquidity addition.
 			checkBalanceTknLP := amountTknMin.Cmp(tknBalanceSender)
 			if checkBalanceTknLP == 0 || checkBalanceTknLP == -1 {
 				// we check if the liquidity provider add enough collateral (WBNB or BUSD) as expected by our configuration. Bc sometimes the dev fuck the pleb and add way less liquidity that was advertised on telegram.
@@ -220,7 +220,7 @@ func (u *UniswapLiquidity) AddETH(ctx context.Context, tx *types.Transaction) er
 	// security checks:
 	// does the liquidity addition deals with the token i'm targetting?
 	if addLiquidity.TokenAddress == u.sniperTTBAddr {
-		// we check if the liquidity provider really possess the liquidity he wants to add, because it is possible tu be lured by other bots that fake liquidity addition.
+		// we check if the liquidity provider really possess the liquidity he wants to add, because it is possible to be lured by other bots that fake liquidity addition.
 		if checkBalanceLP == 0 || checkBalanceLP == -1 {
 			// we check if the liquidity provider add enough collateral (WBNB or BUSD) as expected by our configuration. Bc sometimes the dev fuck the pleb and add way less liquidity that was advertised on telegram.
 			if tx.Value().Cmp(u.sniperMinLiq) == 1 {

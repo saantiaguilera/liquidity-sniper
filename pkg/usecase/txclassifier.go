@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
@@ -11,8 +10,6 @@ import (
 
 type (
 	TransactionClassifier struct {
-		mut *sync.Mutex // TODO: Check if necessary
-
 		routerAddr string
 
 		monitor    transactionClassifierMonitor
@@ -30,7 +27,6 @@ func NewTransactionClassifier(
 ) *TransactionClassifier {
 
 	return &TransactionClassifier{
-		mut:        new(sync.Mutex),
 		routerAddr: raddr,
 		monitor:    m,
 		strategies: s,
@@ -46,9 +42,6 @@ func (u *TransactionClassifier) Classify(ctx context.Context, tx *types.Transact
 	u.monitor(ctx, tx)
 
 	if tx.To().Hex() == u.routerAddr && len(tx.Data()) >= 4 {
-		u.mut.Lock()
-		defer u.mut.Unlock()
-
 		txFunctionHash := [4]byte{}
 		copy(txFunctionHash[:], tx.Data()[:4])
 
