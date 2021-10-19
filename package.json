@@ -1,7 +1,7 @@
 {
     "name": "ax-50-deployer",
     "version": "1.0.0",
-    "description": "",
+    "description": "PCS Liquidity Sniper Bot consuming GETH txs through mempool",
     "main": "truffle-config.js",
     "directories": {
         "test": "test"
@@ -38,6 +38,6 @@
         "withdraw-trigger": "ts-node scripts/trigger_withdrawal.ts"
     },
     "keywords": [],
-    "author": "",
-    "license": ""
+    "author": "saantiaguilera",
+    "license": "GPL-3.0"
 }
