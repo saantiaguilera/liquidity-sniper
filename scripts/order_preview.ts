@@ -18,9 +18,9 @@ const bscProvider = new ethers.providers.JsonRpcProvider(
 
 async function getTokenPrice(token1Address: string, token2Address: string): Promise<number> {
     const tokenA = await Fetcher.fetchTokenData(
-      chain.id,
-      Web3.utils.toChecksumAddress(token1Address),
-      bscProvider,
+        chain.id,
+        Web3.utils.toChecksumAddress(token1Address),
+        bscProvider,
     );
     const tokenB = await Fetcher.fetchTokenData(
         chain.id,
