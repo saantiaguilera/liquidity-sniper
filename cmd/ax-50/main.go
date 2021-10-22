@@ -69,6 +69,6 @@ func main() {
 
 	txController := controller.NewTransaction(ethClientRead, txClassifierUseCase.Classify)
 
-	fmt.Println("> Igniting engine.")
+	log.Info("> Igniting engine.")
 	NewEngine(rpcClientRead, txController).Run(ctx)
 }
