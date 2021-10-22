@@ -1,41 +1,77 @@
 {
-    "chain": {
-        "node": "https://bsc-dataseed.binance.org/",
-        "id": 56,
-        "name": "bsc-mainnet"
+  "chain": {
+    "read": {
+      "node": "rpc to read/stream txs from the mempool, should be an ipc or wss node. MUST HAVE SAME CHAIN ID AS rpc_write!!",
+      "id": 56,
+      "name": "bsc-mainnet"
     },
-    "order": {
-        "size": 2,
-        "expected_tokens": 15000,
-        "dummy (you can delete this line)": "you will be buying with order size (in BNB) the expected_amount of X tokens. eg. size=1.5 / expected_amount=8000 -> you will spend 1.5BNB to buy (at least) 8000 tokens.",
-        "dummy (you can delete this line)2": "size and expected_tokens can be floating point UP TO 3 DECIMAL PLACES. eg: 10.123 OK / 10.1234 ERROR."
-    },
-    "trigger": {
-        "address": "your deployed trigger address. eg: 0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82"
-    },
-    "token": {
-        "address": "address of the token to snipe. eg: 0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
-        "pair_address": "address of the paired token in the LP. Probably WBNB (99%). eg: 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
-        "wbnb": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
-        "busd": "0xe9e7cea3dedca5984780bafc599bd69add087d56"
-    },
-    "accounts": {
-        "admin": "admin is the administrator / deployer of the contracts. this pk gets the final sniped tokens, refunds and interacts with the trigger (supplying bnb / calling it / etc). eg: 1a3eb3fcacddad1...18baac8",
-        "disperser": "disperser private key is the one that spreads bnb for gas to the swarm (for calling later the snipe). can be admin pk too."
-    },
-    "previewer": {
-        "ext_order_size": 100,
-        "liquidity_in_bnb": 300,
-        "liquidity_in_token": 88888,
-        "dummy (you can delete this line)": "ext_order_size is what you assume others will be spending. liquidities are the ones added by the token owners to the LP. eg. ext_order_size=1000 -> you assume 1000 BNB will be spend alongside your snipe at liq. addition" 
-    },
-    "swarm": {
-        "rounds": 4,
-        "spread_amount": 1.5,
-        "path": "./config/bee_book.json",
-        "dummy (you can delete this line)": "rounds is the number of cycles in pow2 of swarming. eg. 4 rounds = 16 accounts (2**4).", 
-        "dummy (you can delete this line)2": "the more rounds, the more chances of frontrunning other bots you have, at the cost of more bnb spent in gas for txs",
-        "dummy (you can delete this line)3": "spread_amount is the bnb you will spread to the swarm so they can call the trigger when liquidity is added. As long as you provide smth that can suffice all txs then OK. If you provide more it will stay there and can be reused for other snipes (or be refunded back)",
-        "dummy (you can delete this line)4": "spread_amount can be floating point UP TO 3 DECIMAL PLACES. eg: 0.123 bnb OK / 0.1234 bnb ERROR."
+    "write": {
+      "node": "rpc to write/push/broadcast our txs to the nodes, can be ipc/wss or http. Can be the same as the read one or simply a known one eg. https://data-seed-prebsc-2-s2.binance.org:8545/",
+      "id": 56,
+      "name": "bsc-mainnet"
     }
+  },
+  "order": {
+    "size": 2,
+    "expected_tokens": 15000,
+    "dummy (you can delete this line)": "you will be buying with order size (in BNB) the expected_amount of X tokens. eg. size=1.5 / expected_amount=8000 -> you will spend 1.5BNB to buy (at least) 8000 tokens.",
+    "dummy (you can delete this line)2": "size and expected_tokens can be floating point UP TO 3 DECIMAL PLACES. eg: 10.123 OK / 10.1234 ERROR."
+  },
+  "contract": {
+    "trigger": "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82 -> your deployed trigger address",
+    "factory": "0x6725F303b657a9451d8BA641348b6761A6CC7a17 -> dex factory address in the provided chain",
+    "router": "0xD99D1c33F9fC3444f8101754aBC46c52416550D1 -> dex router address in the provided chain"
+  },
+  "token": {
+    "address": "address of the token to snipe. eg: 0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
+    "pair_address": "address of the paired token in the LP. Probably WBNB (99%). eg: 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+    "wbnb": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+    "busd": "0xe9e7cea3dedca5984780bafc599bd69add087d56"
+  },
+  "accounts": {
+    "admin": "admin is the administrator / deployer of the contracts. this pk gets the final sniped tokens, refunds and interacts with the trigger (supplying bnb / calling it / etc). eg: 1a3eb3fcacddad1...18baac8",
+    "disperser": "disperser private key is the one that spreads bnb for gas to the swarm (for calling later the snipe). can be admin pk too."
+  },
+  "previewer": {
+    "ext_order_size": 100,
+    "liquidity_in_bnb": 300,
+    "liquidity_in_token": 88888,
+    "dummy (you can delete this line)": "ext_order_size is what you assume others will be spending. liquidities are the ones added by the token owners to the LP. eg. ext_order_size=1000 -> you assume 1000 BNB will be spend alongside your snipe at liq. addition"
+  },
+  "swarm": {
+    "rounds": 4,
+    "spread_amount": 1.5,
+    "path": "./config/bee_book.json",
+    "dummy (you can delete this line)": "rounds is the number of cycles in pow2 of swarming. eg. 4 rounds = 16 accounts (2**4).",
+    "dummy (you can delete this line)2": "the more rounds, the more chances of frontrunning other bots you have, at the cost of more bnb spent in gas for txs",
+    "dummy (you can delete this line)3": "spread_amount is the bnb you will spread to the swarm so they can call the trigger when liquidity is added. As long as you provide smth that can suffice all txs then OK. If you provide more it will stay there and can be reused for other snipes (or be refunded back)",
+    "dummy (you can delete this line)4": "spread_amount can be floating point UP TO 3 DECIMAL PLACES. eg: 0.123 bnb OK / 0.1234 bnb ERROR."
+  },
+  "sniper": {
+    "minimum_liquidity": 0.01,
+    "TEMPLATE. YOU CAN DELETE THIS LINE": "minimum_liquidity is the minimum amount you expect as collateral (the paired asset, eg WBNB) to be added in the addLiquidity tx so we snipe. This is because sometimes devs or other people add liquidity on their own to trigger bots or scam (but add way less liq. than the expected). If the addLiquidity has less than the min provided here, we don't snipe",
+    "monitors": {
+      "address_list": {
+        "enabled": false,
+        "list": [
+          {
+            "name": "address_to_monitor_1",
+            "addr": "0xBf66A7848f96a7dddeC6140d1CaA8eddFFE0DeaB -> you can monitor certain addresses to see what they do. Eg. team / contract owners / etc of the token to see if they are doing shady stuff"
+          },
+          {
+            "name": "address_to_monitor_2",
+            "addr": "0xcdb74F11592b66c2858f1d51ad7C87ba7b00fe897 -> or simply monitor an address because you want to see what it does.. ydy"
+          },
+          {
+            "name": "wault",
+            "addr": "0x9D620e8574D30c89Ee01EeFDA194d52ad9759aB5"
+          }
+        ]
+      },
+      "whale": {
+        "enabled": false,
+        "min": "50000000000000000000 -> number in string. if a tx sends more than this as its value (value: x in tx), then we capture it"
+      }
+    }
+  }
 }

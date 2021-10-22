@@ -1,17 +1,17 @@
 const assert = require('assert');
 
-const CustomPCSRouter = artifacts.require("CustomPCSRouter");
+const CustomRouter = artifacts.require("CustomRouter");
 
 const Trigger = artifacts.require("Trigger");
 
-const { addresses } = require('./../config/configurations.json')
+const { token } = require('./../config/local.json')
 
 module.exports = async function (deployer, network) {
-  const router = await CustomPCSRouter.deployed();
+  const router = await CustomRouter.deployed();
   assert(router != null, 'Expected router to be set to a contract');
 
-  await deployer.deploy(Trigger, addresses.wbnb);
+  await deployer.deploy(Trigger, token.wbnb);
   const trigger = await Trigger.deployed();
   
-  await trigger.setCustomPCSRouter(router.address)
+  await trigger.setCustomRouter(router.address)
 };

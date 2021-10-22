@@ -1,6 +1,6 @@
 I want to test this in a testnet first!
 
-Great! Simply change all info in your local.json and configuration.json config files for the testnet variants, and follow the procedures for a normal usage.
+Great! Simply change all info in your local.json config file for the testnet variants, and follow the procedures for a normal usage.
 
 Thats it! Now you can simulate the complete flow on your own, testing everything.
 

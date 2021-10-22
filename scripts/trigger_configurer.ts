@@ -1,5 +1,5 @@
 import { 
-    chain, order, trigger, token, accounts
+    chain, order, contract, token, accounts
 } from '../config/local.json';
 import { ethers } from "ethers";
 import { BigNumber } from '@ethersproject/bignumber';
@@ -8,14 +8,13 @@ import { TransactionRequest } from '@ethersproject/abstract-provider';
 
 const orderSize = order.size;
 const minimumTokens = order.expected_tokens;
-const triggerAddress = trigger.address;
 const { admin } = accounts;
 
 const bscProvider = new ethers.providers.JsonRpcProvider(
-    chain.node, 
+    chain.read.node, 
     {
-        chainId: chain.id,
-        name: chain.name,
+        chainId: chain.read.id,
+        name: chain.read.name,
     }
 )
 
@@ -36,7 +35,7 @@ async function applyConfiguration(
     console.log(`\n> Applying trigger configuration`)
     console.log(`  Using admin: ${triggerAdminWallet.address}`)
     console.log(`  Admin balance: ${((await triggerAdminWallet.getBalance()).div(BigNumber.from(10).pow(14)).toNumber() / 10000).toFixed(3)} BNB`)
-    console.log(`  Trigger contract: ${trigger.address}`)
+    console.log(`  Trigger contract: ${contract.trigger}`)
 
     // minTokens can have up to 3 decimal places in floating point in case token has low supply
     const minTokens = BigNumber.from(minimumTokens * 1000).mul(BigNumber.from(10).pow(15))
@@ -74,7 +73,7 @@ async function supplyTrigger(
     ]
     const wbnbAddress = token.wbnb
     const wbnb = new ethers.Contract(wbnbAddress, wbnbAbi, bscProvider)
-    const triggerBalance = await wbnb.balanceOf(trigger.address)
+    const triggerBalance = await wbnb.balanceOf(contract.trigger)
 
     if (triggerBalance.lt(orderAmount)) {
         console.log(`\n> Supplying BNB to trigger contract`)
@@ -85,7 +84,7 @@ async function supplyTrigger(
         }
 
         const txReq: TransactionRequest = {
-            to: trigger.address,
+            to: contract.trigger,
             value: diffAmount,
             gasPrice: gasPrice,
             gasLimit: ethers.utils.hexlify(300000),
@@ -93,7 +92,7 @@ async function supplyTrigger(
 
         const { hash } = await triggerAdminWallet.sendTransaction(txReq)
     
-        console.log(`  Tx supplying BNB for trigger contract ${trigger.address}: ${hash}`)
+        console.log(`  Tx supplying BNB for trigger contract ${contract.trigger}: ${hash}`)
         const receipt = await bscProvider.waitForTransaction(hash);
         if (receipt.status != 1) {
             console.log(` [ERROR] Tx ${hash} failed at ${triggerAdminWallet.address}: ${JSON.stringify(receipt)}`)
@@ -109,7 +108,7 @@ async function configureTrigger(token: ethers.Contract, pair: string): Promise<v
     const triggerAbi = [
         "function configureSnipe(address _tokenPaired, uint _amountIn, address _tknToBuy, uint _amountOutMin) external returns(bool)",
     ]
-    const trigger = new ethers.Contract(triggerAddress, triggerAbi, triggerAdminWallet)
+    const trigger = new ethers.Contract(contract.trigger, triggerAbi, triggerAdminWallet)
     const orderAmount = BigNumber.from(orderSize * 1000).mul(BigNumber.from(10).pow(15)) // orderSize can have up to 3 decimal places
     const gasPrice = await bscProvider.getGasPrice()
 

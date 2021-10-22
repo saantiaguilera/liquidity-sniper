@@ -5,13 +5,13 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 import "./TransferHelper.sol";
-import "./pancake/PancakeLibrary.sol";
+import "./uniswap/UniSwapV2Library.sol";
 
-interface IPancakeFactory {
+interface IUniSwapV2Factory {
     function INIT_CODE_PAIR_HASH() external view returns(bytes32);
 }
 
-contract CustomPCSRouter is Ownable {
+contract CustomRouter is Ownable {
 
     using SafeMath for uint;
 
@@ -24,11 +24,11 @@ contract CustomPCSRouter is Ownable {
         factory = _factory;
         wbnb = _wbnb;
 
-        creationCode = IPancakeFactory(_factory).INIT_CODE_PAIR_HASH();
+        creationCode = IUniSwapV2Factory(_factory).INIT_CODE_PAIR_HASH();
     }
 
     modifier ensure(uint deadline) {
-        require(deadline >= block.timestamp, 'PancakeRouter: EXPIRED');
+        require(deadline >= block.timestamp, 'Router: EXPIRED');
         _;
     }
 
@@ -36,13 +36,13 @@ contract CustomPCSRouter is Ownable {
         assert(msg.sender == wbnb); // only accept BNB via fallback from the wbnb contract
     }
 
-    function setPCSFactoryAddress(address _factory) external onlyOwner returns(bool success) {
+    function setFactoryAddress(address _factory) external onlyOwner returns(bool success) {
         factory = _factory;
-        creationCode = IPancakeFactory(_factory).INIT_CODE_PAIR_HASH(); // creationCode changes too.
+        creationCode = IUniSwapV2Factory(_factory).INIT_CODE_PAIR_HASH(); // creationCode changes too.
         return true;
     }
 
-    function getPCSFactoryAddress() external view onlyOwner returns(address) {
+    function getFactoryAddress() external view onlyOwner returns(address) {
         return factory;
     }
 
@@ -66,10 +66,10 @@ contract CustomPCSRouter is Ownable {
         address to,
         uint deadline
     ) external virtual ensure(deadline) returns (uint[] memory amounts) {
-        amounts = PancakeLibrary.getAmountsOut(factory, amountIn, path, creationCode);
-        require(amounts[amounts.length - 1] >= amountOutMin, 'PancakeRouter: INSUFFICIENT_OUTPUT_AMOUNT');
+        amounts = UniSwapV2Library.getAmountsOut(factory, amountIn, path, creationCode);
+        require(amounts[amounts.length - 1] >= amountOutMin, 'Router: INSUFFICIENT_OUTPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
-            path[0], msg.sender, PancakeLibrary.pairFor(factory, path[0], path[1], creationCode), amounts[0]
+            path[0], msg.sender, UniSwapV2Library.pairFor(factory, path[0], path[1], creationCode), amounts[0]
         );
 
         route(amounts, path, to);
@@ -78,11 +78,11 @@ contract CustomPCSRouter is Ownable {
     function route(uint[] memory amounts, address[] memory path, address _to) private {
         for (uint i; i < path.length - 1; i++) {
             (address input, address output) = (path[i], path[i + 1]);
-            (address token0,) = PancakeLibrary.sortTokens(input, output);
+            (address token0,) = UniSwapV2Library.sortTokens(input, output);
             uint amountOut = amounts[i + 1];
             (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOut) : (amountOut, uint(0));
-            address to = i < path.length - 2 ? PancakeLibrary.pairFor(factory, output, path[i + 2], creationCode) : _to;
-            IUniswapV2Pair(PancakeLibrary.pairFor(factory, input, output, creationCode)).swap(
+            address to = i < path.length - 2 ? UniSwapV2Library.pairFor(factory, output, path[i + 2], creationCode) : _to;
+            IUniswapV2Pair(UniSwapV2Library.pairFor(factory, input, output, creationCode)).swap(
                 amount0Out, amount1Out, to, new bytes(0)
             );
         }

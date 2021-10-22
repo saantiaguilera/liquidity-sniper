@@ -18,7 +18,7 @@ import (
 const (
 	configFolderEnv     = "CONF_DIR" // env var for setting the config folder. This is /config usually.
 	configFolderDefault = "config"
-	configFile          = "configurations"
+	configFile          = "local"
 	beeBookFile         = "bee_book"
 
 	logLevel = log.LvlDebug
@@ -39,8 +39,8 @@ func main() {
 
 	log.Info(fmt.Sprintf("Configurations parsed: %+v\n", conf))
 
-	rpcClientRead := newRPCClient(ctx, conf.Sniper.RPCRead)
-	rpcClientWrite := newRPCClient(ctx, conf.Sniper.RPCWrite)
+	rpcClientRead := newRPCClient(ctx, conf.Chains.RChain.Node)
+	rpcClientWrite := newRPCClient(ctx, conf.Chains.WChain.Node)
 	ethClientRead := ethclient.NewClient(rpcClientRead)
 	ethClientWrite := ethclient.NewClient(rpcClientWrite)
 
@@ -59,10 +59,10 @@ func main() {
 
 	sniper := newSniperEntity(ctx, conf, ethClientWrite)
 	monitors := newMonitors(conf, sniper)
-	pcsFactory := newPCSFactory(conf, ethClientWrite)
+	factory := newFactory(conf, ethClientWrite)
 	swarm := newBees(ctx, ethClientWrite)
 	monitorEngine := service.NewMonitorEngine(monitors...)
-	sniperClient := service.NewSniper(ethClientWrite, pcsFactory, swarm, sniper)
+	sniperClient := service.NewSniper(ethClientWrite, factory, swarm, sniper)
 	uniLiquidityClient := newUniswapLiquidityClient(ethClientWrite, sniperClient, sniper)
 
 	txClassifierUseCase := newTxClassifierUseCase(conf, monitorEngine, uniLiquidityClient)

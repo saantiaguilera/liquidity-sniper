@@ -1,7 +1,7 @@
 {
     "name": "ax-50-deployer",
     "version": "1.0.0",
-    "description": "PCS Liquidity Sniper Bot consuming GETH txs through mempool",
+    "description": "EVM Liquidity Sniper Bot consuming GETH txs through mempool",
     "main": "truffle-config.js",
     "directories": {
         "test": "test"
@@ -9,7 +9,6 @@
     "dependencies": {
         "@openzeppelin/contracts": "^3.4.1",
         "@openzeppelin/contracts-upgradeable": "^3.4.1",
-        "@pancakeswap/sdk": "^2.4.0",
         "@truffle/hdwallet-provider": "^1.2.6",
         "@uniswap/v2-core": "^1.0.1",
         "axios": "^0.21.2",
