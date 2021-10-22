@@ -9,10 +9,10 @@ import { exit } from 'process';
 const { admin } = accounts;
 
 const bscProvider = new ethers.providers.JsonRpcProvider(
-    chain.read.node, 
+    chain.write.node,
     {
-        chainId: chain.read.id,
-        name: chain.read.name,
+        chainId: chain.write.id,
+        name: chain.write.name,
     }
 )
 

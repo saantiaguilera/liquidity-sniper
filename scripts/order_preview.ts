@@ -7,10 +7,10 @@ const { ext_order_size, liquidity_in_bnb, liquidity_in_token } = previewer;
 const selfOrderSize = order.size
 
 const bscProvider = new ethers.providers.JsonRpcProvider(
-    chain.read.node, 
+    chain.write.node,
     {
-        chainId: chain.read.id,
-        name: chain.read.name,
+        chainId: chain.write.id,
+        name: chain.write.name,
     }
 )
 
