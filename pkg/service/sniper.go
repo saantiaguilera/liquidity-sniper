@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 	"runtime/debug"
+	"strings"
 	"sync"
 	"time"
 
@@ -144,25 +145,20 @@ func (c *Sniper) Snipe(ctx context.Context, gas *big.Int) error {
 					hexAmount := hex.EncodeToString(l.Data)
 					var value = new(big.Int)
 					value.SetString(hexAmount, 16)
-					amountBought, err := c.formatERC20Decimals(value, c.sniperTTBAddr)
-					if err != nil {
-						log.Info(fmt.Sprintf("sniping succeeded! but we couldn't get the bought balance: %s", err))
-						continue
+					var buf strings.Builder
+					_, _ = buf.WriteString("Sniping succeeded!\n")
+					_, _ = buf.WriteString(fmt.Sprintf("    Hash: %s\n", res.Hash.String()))
+					_, _ = buf.WriteString(fmt.Sprintf("    Token: %s\n", c.sniperTTBAddr.String()))
+
+					if amountBought, err := c.formatERC20Decimals(value, c.sniperTTBAddr); err == nil {
+						_, _ = buf.WriteString(fmt.Sprintf("    Amount Bought: %.4f\n", amountBought))
 					}
 
-					pairAddress, err := c.factoryClient.GetPair(&bind.CallOpts{}, c.sniperTTBAddr, c.sniperTokenPaired)
-					if err != nil {
-						log.Info(fmt.Sprintf("sniping succeeded! but we couldn't get the pair bought: %s", err))
-						continue
+					if pairAddress, err := c.factoryClient.GetPair(&bind.CallOpts{}, c.sniperTTBAddr, c.sniperTokenPaired); err == nil {
+						_, _ = buf.WriteString(fmt.Sprintf("    Pair Address: %s", pairAddress.String()))
 					}
 
-					log.Info(fmt.Sprintf(
-						"sniping success!!!\n  hash: %s\n  token: %s\n  pairAddress: %s\n  amount bought: %.4f",
-						res.Hash.String(),
-						c.sniperTTBAddr.String(),
-						pairAddress.String(),
-						amountBought,
-					))
+					log.Info(buf.String())
 				}
 			}
 		}
