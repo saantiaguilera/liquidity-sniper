@@ -10,7 +10,7 @@ interface IWBNB {
     function deposit() external payable;
 }
 
-interface ICustomPCSRouter {
+interface ICustomRouter {
     function swapExactTokensForTokens(
         uint amountIn,
         uint amountOutMin,
@@ -47,7 +47,7 @@ contract Trigger is Ownable {
     // Trigger is the smart contract in charge or performing liquidity sniping.
     // Its role is to hold the BNB, perform the swap once ax-50 detect the tx in the mempool and if all checks are passed; then route the tokens sniped to the owner.
     // It requires a first call to configureSnipe in order to be armed. Then, it can snipe on whatever pair no matter the paired token (BUSD / WBNB etc..).
-    // This contract uses a custtom router which is a copy of PCS router but with modified selectors, so that our tx are more difficult to listen than those directly going through PCS router.
+    // This contract uses a custtom router which is a copy of uniswapv2 router but with modified selectors, so that our tx are more difficult to listen than those directly going through the usual router.
     
     // perform the liquidity sniping
     function snipeListing() external returns(bool success) {
@@ -68,7 +68,7 @@ contract Trigger is Ownable {
             path[1] = tokenToBuy;
         }
 
-        ICustomPCSRouter(customRouter).swapExactTokensForTokens(
+        ICustomRouter(customRouter).swapExactTokensForTokens(
               wbnbIn,
               minTknOut,
               path, 
@@ -87,11 +87,11 @@ contract Trigger is Ownable {
         return true;
     }
     
-    function getCustomPCSRouter() external view onlyOwner returns(address) {
+    function getCustomRouter() external view onlyOwner returns(address) {
         return customRouter;
     }
     
-    function setCustomPCSRouter(address _newRouter) external onlyOwner returns(bool success) {
+    function setCustomRouter(address _newRouter) external onlyOwner returns(bool success) {
         customRouter = _newRouter;
         return true;
     }

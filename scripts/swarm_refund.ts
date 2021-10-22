@@ -12,10 +12,10 @@ const { path } = swarm;
 const { admin } = accounts;
 
 const bscProvider = new ethers.providers.JsonRpcProvider(
-    chain.node, 
+    chain.write.node,
     {
-        chainId: chain.id,
-        name: chain.name,
+        chainId: chain.write.id,
+        name: chain.write.name,
     }
 )
 

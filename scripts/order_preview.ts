@@ -1,35 +1,32 @@
-import { chain, order, token, previewer } from '../config/local.json';
+import { chain, order, contract, token, previewer } from '../config/local.json';
 import { ethers } from "ethers";
-import { Fetcher } from '@pancakeswap/sdk';
+import { BigNumber } from '@ethersproject/bignumber';
 import Web3 from 'web3'
 
 const { ext_order_size, liquidity_in_bnb, liquidity_in_token } = previewer;
-const tokenAddress = token.address
-const { wbnb, busd } = token
 const selfOrderSize = order.size
 
 const bscProvider = new ethers.providers.JsonRpcProvider(
-    chain.node, 
+    chain.write.node,
     {
-        chainId: chain.id,
-        name: chain.name,
+        chainId: chain.write.id,
+        name: chain.write.name,
     }
 )
 
 async function getTokenPrice(token1Address: string, token2Address: string): Promise<number> {
-    const tokenA = await Fetcher.fetchTokenData(
-        chain.id,
-        Web3.utils.toChecksumAddress(token1Address),
-        bscProvider,
-    );
-    const tokenB = await Fetcher.fetchTokenData(
-        chain.id,
-        Web3.utils.toChecksumAddress(token2Address),
-        bscProvider,
-    );
-    const pair = await Fetcher.fetchPairData(tokenA, tokenB, bscProvider);
-    const price = pair.token0Price.toSignificant(10);
-    return parseFloat(price);
+    const factoryAbi = [
+        "function getPair(address tokenA, address tokenB) external view returns (address)"
+    ]
+    const factory = new ethers.Contract(contract.factory, factoryAbi, bscProvider)
+
+    const pairAddress = await factory.getPair(Web3.utils.toChecksumAddress(token1Address), Web3.utils.toChecksumAddress(token2Address))
+    const pairAbi = [
+        "function getReserves() external view returns (uint112, uint112, uint32)",
+    ]
+    const pair = new ethers.Contract(pairAddress, pairAbi, bscProvider)
+    const [ reserveA, reserveB ] = await pair.getReserves()
+    return reserveA.div(BigNumber.from(10).pow(14)).toNumber() / reserveB.div(BigNumber.from(10).pow(14)).toNumber()
 }
 
 function quote(minAmount: number, rsvIn: number, rsvOut: number): number {
@@ -62,13 +59,13 @@ async function preview(): Promise<void> {
     const erc20Abi = [
         "function symbol() view returns (string)"
     ]
-    const erc20 = new ethers.Contract(tokenAddress, erc20Abi, bscProvider)
+    const erc20 = new ethers.Contract(token.address, erc20Abi, bscProvider)
     const tokenName = await erc20.symbol()
 
     console.log(`> Expecting liquidity of ${liquidity_in_bnb} BNB + ${liquidity_in_token} ${tokenName}.`)
     console.log(`> [PREVIEW] Order size to snipe: ${selfOrderSize} BNB`)
     
-    const bnbPrice = await getTokenPrice(wbnb, busd)
+    const bnbPrice = await getTokenPrice(token.wbnb, token.busd)
     console.log(`Current BNB price: ${bnbPrice.toFixed(3)}`)
     console.log('\nStarting simulation...')
 

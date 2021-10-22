@@ -2,33 +2,47 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 
 	"github.com/ethereum/go-ethereum/common"
 )
 
-const (
-	AddressCakeRouter  AddressName = "cake_router"
-	AddressCakeFactory AddressName = "cake_factory"
-)
-
 type (
-	AddressName string
+	Address string
 
 	Config struct {
-		Addresses map[string]string `json:"addresses"`
-		Sniper    Sniper            `json:"sniper"`
-		Monitors  Monitors          `json:"monitors"`
+		Chains    RWChain   `json:"chain"`
+		Contracts Contracts `json:"contract"`
+		Tokens    Tokens    `json:"token"`
+		Sniper    Sniper    `json:"sniper"`
+	}
+
+	RWChain struct {
+		RChain Chain `json:"read"`
+		WChain Chain `json:"write"`
+	}
+
+	Chain struct {
+		Node string `json:"node"`
+		ID   uint   `json:"id"`
+		Name string `json:"name"`
+	}
+
+	Contracts struct {
+		Trigger Address `json:"trigger"`
+		Factory Address `json:"factory"`
+		Router  Address `json:"router"`
+	}
+
+	Tokens struct {
+		SnipeA Address `json:"address"`
+		SnipeB Address `json:"pair_address"`
+		WBNB   Address `json:"wbnb"`
 	}
 
 	Sniper struct {
-		Trigger      string  `json:"trigger"`
-		BaseCurrency string  `json:"base_currency"`
-		TargetToken  string  `json:"target_token"`
-		MinLiquidity float32 `json:"minimum_liquidity"`
-		RPCRead      string  `json:"rpc_read"`
-		RPCWrite     string  `json:"rpc_write"`
+		MinLiquidity float32  `json:"minimum_liquidity"`
+		Monitors     Monitors `json:"monitors"`
 	}
 
 	Monitors struct {
@@ -42,8 +56,8 @@ type (
 	}
 
 	AddressListEntry struct {
-		Name string `json:"name"`
-		Addr string `json:"addr"`
+		Name string  `json:"name"`
+		Addr Address `json:"addr"`
 	}
 
 	WhaleMonitor struct {
@@ -64,9 +78,16 @@ func NewConfigFromFile(f string) (*Config, error) {
 	return c, nil
 }
 
-func (c *Config) Addr(name AddressName) (common.Address, error) {
-	if v, ok := c.Addresses[string(name)]; ok {
-		return common.HexToAddress(v), nil
+func (a Address) Addr() common.Address {
+	if len(a) == 0 {
+		panic("empty address")
 	}
-	return common.Address{}, fmt.Errorf("%s not found in config addressses", name)
+	return common.HexToAddress(string(a))
+}
+
+func (a Address) Hex() string {
+	if len(a) == 0 {
+		panic("empty address")
+	}
+	return string(a)
 }

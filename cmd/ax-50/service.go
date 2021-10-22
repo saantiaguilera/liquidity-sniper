@@ -15,7 +15,7 @@ import (
 
 	"github.com/saantiaguilera/liquidity-sniper/pkg/domain"
 	"github.com/saantiaguilera/liquidity-sniper/pkg/service"
-	"github.com/saantiaguilera/liquidity-sniper/third_party/pancake"
+	"github.com/saantiaguilera/liquidity-sniper/third_party/uniswap"
 )
 
 type (
@@ -61,9 +61,9 @@ func newSniperEntity(ctx context.Context, conf *Config, ethClient *ethclient.Cli
 	ml.Mul(ml, mul10pow14)
 
 	return domain.NewSniper(
-		conf.Sniper.Trigger,
-		conf.Sniper.BaseCurrency,
-		conf.Sniper.TargetToken,
+		conf.Contracts.Trigger.Hex(),
+		conf.Tokens.SnipeB.Hex(),
+		conf.Tokens.SnipeA.Hex(),
 		ml,
 		chainID,
 	)
@@ -72,35 +72,31 @@ func newSniperEntity(ctx context.Context, conf *Config, ethClient *ethclient.Cli
 func newMonitors(conf *Config, sniper domain.Sniper) []service.Monitor {
 	monitors := make([]service.Monitor, 0, 2)
 
-	if conf.Monitors.AddressListMonitor.Enabled {
-		l := make([]domain.NamedAddress, len(conf.Monitors.AddressListMonitor.List))
-		for i, v := range conf.Monitors.AddressListMonitor.List {
-			l[i] = domain.NewNamedAddress(v.Name, v.Addr)
+	if conf.Sniper.Monitors.AddressListMonitor.Enabled {
+		l := make([]domain.NamedAddress, len(conf.Sniper.Monitors.AddressListMonitor.List))
+		for i, v := range conf.Sniper.Monitors.AddressListMonitor.List {
+			l[i] = domain.NewNamedAddress(v.Name, v.Addr.Hex())
 		}
 
 		monitors = append(monitors, service.NewAddressMonitor(sniper, l...).Monitor)
 	}
 
-	if conf.Monitors.WhaleMonitor.Enabled {
-		min, _ := new(big.Int).SetString(conf.Monitors.WhaleMonitor.Min, 10)
+	if conf.Sniper.Monitors.WhaleMonitor.Enabled {
+		min, _ := new(big.Int).SetString(conf.Sniper.Monitors.WhaleMonitor.Min, 10)
 		monitors = append(monitors, service.NewWhaleMonitor(min).Monitor)
 	}
 
 	return monitors
 }
 
-func newPCSFactory(conf *Config, ethClient *ethclient.Client) *pancake.IPancakeFactory {
-	cakeFactoryAddr, err := conf.Addr(AddressCakeFactory)
+func newFactory(conf *Config, ethClient *ethclient.Client) *uniswap.IUniswapV2Factory {
+	factoryAddr := conf.Contracts.Factory.Addr()
+	factory, err := uniswap.NewIUniswapV2Factory(factoryAddr, ethClient)
 	if err != nil {
 		panic(err)
 	}
 
-	pcsFactory, err := pancake.NewIPancakeFactory(cakeFactoryAddr, ethClient)
-	if err != nil {
-		panic(err)
-	}
-
-	return pcsFactory
+	return factory
 }
 
 func newBees(ctx context.Context, ethClient *ethclient.Client) []*service.Bee {

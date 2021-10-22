@@ -68,7 +68,7 @@ func NewUniswapLiquidity(
 	if err != nil {
 		return nil, err
 	}
-	tp := common.HexToAddress(sn.AddressBaseCurrency)
+	tp := common.HexToAddress(sn.AddressTargetPaired)
 
 	return &UniswapLiquidity{
 		ethClient:         e,

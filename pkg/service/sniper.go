@@ -82,7 +82,7 @@ func NewSniper(
 		swarm:             s,
 		sniperTTBAddr:     common.HexToAddress(sn.AddressTargetToken),
 		sniperTriggerAddr: common.HexToAddress(sn.AddressTrigger),
-		sniperTokenPaired: common.HexToAddress(sn.AddressBaseCurrency),
+		sniperTokenPaired: common.HexToAddress(sn.AddressTargetPaired),
 		sniperChainID:     sn.ChainID,
 	}
 }

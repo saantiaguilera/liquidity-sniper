@@ -1,19 +1,18 @@
 import { 
-    chain, trigger, token, accounts
+    chain, contract, token, accounts
 } from '../config/local.json';
 import { ethers } from "ethers";
 import { BigNumber } from '@ethersproject/bignumber';
 import * as readline from 'readline';
 import { exit } from 'process';
 
-const triggerAddress = trigger.address;
 const { admin } = accounts;
 
 const bscProvider = new ethers.providers.JsonRpcProvider(
-    chain.node, 
+    chain.write.node,
     {
-        chainId: chain.id,
-        name: chain.name,
+        chainId: chain.write.id,
+        name: chain.write.name,
     }
 )
 
@@ -27,7 +26,7 @@ async function withdrawTrigger(tokenAddress: string, amount: BigNumber): Promise
     const triggerAbi = [
         "function emmergencyWithdrawTkn(address _token, uint _amount) external returns(bool)",
     ]
-    const trigger = new ethers.Contract(triggerAddress, triggerAbi, triggerAdminWallet)
+    const trigger = new ethers.Contract(contract.trigger, triggerAbi, triggerAdminWallet)
     const gasPrice = await bscProvider.getGasPrice()
 
     const { hash } = await trigger.emmergencyWithdrawTkn(
@@ -57,7 +56,7 @@ async function promptWithdrawal(): Promise<void> {
 
     console.log('> Checking trigger balance')
 
-    const triggerBalance: BigNumber = await wbnb.balanceOf(trigger.address)
+    const triggerBalance: BigNumber = await wbnb.balanceOf(contract.trigger)
     console.log(`  WBNB: ${(triggerBalance.div(BigNumber.from(10).pow(14)).toNumber() / 10000).toFixed(3)}`)
 
     if (triggerBalance.gt(BigNumber.from(10).pow(15))) { // > 0.001
