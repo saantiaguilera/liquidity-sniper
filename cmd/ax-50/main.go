@@ -37,7 +37,7 @@ func main() {
 		panic(err) // halt immediately
 	}
 
-	log.Info(fmt.Sprintf("Configurations parsed: %+v\n", conf))
+	log.Info(fmt.Sprintf("Configurations parsed: %+v", conf))
 
 	rpcClientRead := newRPCClient(ctx, conf.Chains.RChain.Node)
 	rpcClientWrite := newRPCClient(ctx, conf.Chains.WChain.Node)
@@ -69,6 +69,6 @@ func main() {
 
 	txController := controller.NewTransaction(ethClientRead, txClassifierUseCase.Classify)
 
-	log.Info("> Igniting engine.")
+	log.Info("igniting engine")
 	NewEngine(rpcClientRead, txController).Run(ctx)
 }

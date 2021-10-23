@@ -30,7 +30,7 @@ type (
 )
 
 func (l *logHandler) Log(r *log.Record) error {
-	fmt.Println(string(l.format.Format(r)))
+	fmt.Print(string(l.format.Format(r)))
 	return nil
 }
 
