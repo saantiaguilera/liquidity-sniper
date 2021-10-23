@@ -36,7 +36,7 @@
     "ext_order_size": 100,
     "liquidity_in_bnb": 300,
     "liquidity_in_token": 88888,
-    "dummy (you can delete this line)": "ext_order_size is what you assume others will be spending. liquidities are the ones added by the token owners to the LP. eg. ext_order_size=1000 -> you assume 1000 BNB will be spend alongside your snipe at liq. addition"
+    "dummy (you can delete this line)": "ext_order_size is the order of magnitude of what you assume others will be spending. liquidities are the ones added by the token owners to the LP. eg. ext_order_size=10 -> you assume either 10/20/30/40/... BNB will be spend alongside your snipe at liq. addition"
   },
   "swarm": {
     "rounds": 4,

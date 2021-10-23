@@ -26,7 +26,7 @@ async function getTokenPrice(token1Address: string, token2Address: string): Prom
     ]
     const pair = new ethers.Contract(pairAddress, pairAbi, bscProvider)
     const [ reserveA, reserveB ] = await pair.getReserves()
-    return reserveA.div(BigNumber.from(10).pow(14)).toNumber() / reserveB.div(BigNumber.from(10).pow(14)).toNumber()
+    return reserveB.div(BigNumber.from(10).pow(14)).toNumber() / reserveA.div(BigNumber.from(10).pow(14)).toNumber()
 }
 
 function quote(minAmount: number, rsvIn: number, rsvOut: number): number {
