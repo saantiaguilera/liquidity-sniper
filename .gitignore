@@ -1,11 +1,8 @@
 node_modules/
 build/
 
-.idea/
 */.DS_Store
 
 config/local.json
 config/bee_book.json
-config/bee_book_tmp.json
-local.properties
 .env

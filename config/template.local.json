@@ -3,18 +3,18 @@
     "read": {
       "node": "rpc to read/stream txs from the mempool, should be an ipc or wss node. MUST HAVE SAME CHAIN ID AS rpc_write!!",
       "id": 56,
-      "name": "bsc-mainnet"
+      "name": "bsc-mainnet -> name of the chain. id is the chain_id"
     },
     "write": {
       "node": "rpc to write/push/broadcast our txs to the nodes, can be ipc/wss or http. Can be the same as the read one or simply a known one eg. https://data-seed-prebsc-2-s2.binance.org:8545/",
       "id": 56,
-      "name": "bsc-mainnet"
+      "name": "bsc-mainnet -> name of the chain. id is the chain_id. BOTH HAVE TO BE THE SAME FOR READ AND WRITE!!"
     }
   },
   "order": {
     "size": 2,
     "expected_tokens": 15000,
-    "dummy (you can delete this line)": "you will be buying with order size (in BNB) the expected_amount of X tokens. eg. size=1.5 / expected_amount=8000 -> you will spend 1.5BNB to buy (at least) 8000 tokens.",
+    "dummy (you can delete this line)": "you will be buying with order size (in BNB) at least the expected_amount of X tokens. eg. size=1.5 / expected_amount=8000 -> you will spend 1.5BNB to buy AT LEAST 8000 tokens.",
     "dummy (you can delete this line)2": "size and expected_tokens can be floating point UP TO 3 DECIMAL PLACES. eg: 10.123 OK / 10.1234 ERROR."
   },
   "contract": {
@@ -49,7 +49,7 @@
   },
   "sniper": {
     "minimum_liquidity": 0.01,
-    "TEMPLATE. YOU CAN DELETE THIS LINE": "minimum_liquidity is the minimum amount you expect as collateral (the paired asset, eg WBNB) to be added in the addLiquidity tx so we snipe. This is because sometimes devs or other people add liquidity on their own to trigger bots or scam (but add way less liq. than the expected). If the addLiquidity has less than the min provided here, we don't snipe",
+    "dummy (you can delete this line)": "minimum_liquidity is the minimum amount you expect as collateral (the paired asset, eg WBNB) to be added in the addLiquidity tx so we snipe. This is because sometimes devs or other people add liquidity on their own to trigger bots or scam (but add way less liq. than the expected). If the addLiquidity has less than the min provided here, we don't snipe",
     "monitors": {
       "address_list": {
         "enabled": false,

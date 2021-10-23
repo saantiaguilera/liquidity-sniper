@@ -1,34 +1,34 @@
 [
   {
-    "address": "0x13DEaEe548d2De1400a4B95737874623d9CF0e13",
+    "addr": "0x13DEaEe548d2De1400a4B95737874623d9CF0e13",
     "pk": "some pk (eg. 0x18293e1ab1cd191e...19cbcc1)"
   },
   {
-    "address": "0x4d6070EA3567556110a22eebB153F7d5dCb89ac6",
+    "addr": "0x4d6070EA3567556110a22eebB153F7d5dCb89ac6",
     "pk": "another pk"
   },
   {
-    "address": "0x225C9081285Ff835278d264be551b465449063ef",
+    "addr": "0x225C9081285Ff835278d264be551b465449063ef",
     "pk": "another pk"
   },
   {
-    "address": "0x2a7CEb93fc8D60094B2A302232D97e9A6C1e4e7e",
+    "addr": "0x2a7CEb93fc8D60094B2A302232D97e9A6C1e4e7e",
     "pk": "another pk"
   },
   {
-    "address": "0x18002dDd8E68f027a745014e1d705A4c74B2d5FA",
+    "addr": "0x18002dDd8E68f027a745014e1d705A4c74B2d5FA",
     "pk": "another pk"
   },
   {
-    "address": "0x21a416d3d2F6bF8583adC293eAe8d258ff84D8b3",
+    "addr": "0x21a416d3d2F6bF8583adC293eAe8d258ff84D8b3",
     "pk": "another pk"
   },
   {
-    "address": "0x6c3b73e476eE6035342e1C05E8E34Bda85Ed2204",
+    "addr": "0x6c3b73e476eE6035342e1C05E8E34Bda85Ed2204",
     "pk": "another pk"
   },
   {
-    "address": "0xE0bc79620ae3520d70b609fE1a61b585E962e419",
+    "addr": "0xE0bc79620ae3520d70b609fE1a61b585E962e419",
     "pk": "another pk"
   }
 ]
