@@ -2,7 +2,7 @@
 
 This bot requires you to run the GETH client + use ethers framework. All addresses and private keys contained have been changed for the sake of this public repo. 
 
-Supports any EVM environment and UniSwapV2 forked dex seemlessly.
+Supports any EVM environment and UniSwapV2 forked AMM seemlessly.
 
 This is heavily based on https://github.com/Supercycled/cake_sniper, so major thanks to him.
 
@@ -45,7 +45,7 @@ In future snipes, you can avoid most of the steps and just run step 1 & 6, simpl
 
 If you have already configured the trigger contract, simply leave the client running with `go run ./...`. Once the liquidity is added it should snipe it transparently.
 
-And that's it! the bot should be working without hassles! The bot is currently defined to work with any EVM and UniSwapV2 forked dex.
+And that's it! the bot should be working without hassles! The bot is currently defined to work with any EVM and UniSwapV2 forked AMM.
 
 ## Donations
 

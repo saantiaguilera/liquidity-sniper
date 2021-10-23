@@ -19,8 +19,8 @@
   },
   "contract": {
     "trigger": "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82 -> your deployed trigger address",
-    "factory": "0x6725F303b657a9451d8BA641348b6761A6CC7a17 -> dex factory address in the provided chain",
-    "router": "0xD99D1c33F9fC3444f8101754aBC46c52416550D1 -> dex router address in the provided chain"
+    "factory": "0x6725F303b657a9451d8BA641348b6761A6CC7a17 -> AMM factory address in the provided chain",
+    "router": "0xD99D1c33F9fC3444f8101754aBC46c52416550D1 -> AMM router address in the provided chain"
   },
   "token": {
     "address": "address of the token to snipe. eg: 0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
