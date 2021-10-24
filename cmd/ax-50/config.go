@@ -11,21 +11,27 @@ type (
 	Address string
 
 	Config struct {
-		Chains    RWChain   `json:"chain"`
-		Contracts Contracts `json:"contract"`
-		Tokens    Tokens    `json:"token"`
-		Sniper    Sniper    `json:"sniper"`
+		Chains    ChainContainer `json:"chain"`
+		Contracts Contracts      `json:"contract"`
+		Tokens    Tokens         `json:"token"`
+		Sniper    Sniper         `json:"sniper"`
 	}
 
-	RWChain struct {
-		RChain Chain `json:"read"`
-		WChain Chain `json:"write"`
+	ChainContainer struct {
+		Stream Chain      `json:"stream"`
+		Snipe  MultiChain `json:"snipe"`
 	}
 
 	Chain struct {
 		Node string `json:"node"`
 		ID   uint   `json:"id"`
 		Name string `json:"name"`
+	}
+
+	MultiChain struct {
+		Nodes []string `json:"nodes"`
+		ID    uint     `json:"id"`
+		Name  string   `json:"name"`
 	}
 
 	Contracts struct {

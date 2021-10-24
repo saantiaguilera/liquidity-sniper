@@ -39,7 +39,7 @@ func main() {
 	}
 
 	configureLog(logLevel)
-	ctx := context.Background()
+	ctx := service.NewLoadBalancedContext(context.Background())
 
 	dir := os.Getenv(configFolderEnv)
 	if len(dir) == 0 {
@@ -50,37 +50,31 @@ func main() {
 		panic(err) // halt immediately
 	}
 
-	log.Info(fmt.Sprintf("Configurations parsed: %+v", conf))
+	log.Info(fmt.Sprintf("configurations parsed: %+v", conf))
 
-	rpcClientRead := newRPCClient(ctx, conf.Chains.RChain.Node)
-	rpcClientWrite := newRPCClient(ctx, conf.Chains.WChain.Node)
-	ethClientRead := ethclient.NewClient(rpcClientRead)
-	ethClientWrite := ethclient.NewClient(rpcClientWrite)
+	rpcClientRead := newRPCClient(ctx, conf.Chains.Stream.Node)
 
-	chainIDRead, err := ethClientRead.NetworkID(ctx)
-	if err != nil {
-		panic(err)
+	writeChains := make([]service.EthClient, 0, len(conf.Chains.Snipe.Nodes))
+	for i := 0; i < len(conf.Chains.Snipe.Nodes); i++ {
+		rpcClientWrite := newRPCClient(ctx, conf.Chains.Snipe.Nodes[i])
+		writeChains = append(writeChains, ethclient.NewClient(rpcClientWrite))
 	}
-	chainIDWrite, err := ethClientWrite.NetworkID(ctx)
-	if err != nil {
-		panic(err)
+	if len(writeChains) == 0 {
+		panic("no clients provided for snipe")
 	}
+	ecli := service.NewEthClientCluster(writeChains...)
 
-	if chainIDRead.Cmp(chainIDWrite) != 0 {
-		panic("expected read and write clients on same chain id")
-	}
-
-	sniper := newSniperEntity(ctx, conf, ethClientWrite)
+	sniper := newSniperEntity(ctx, conf, ecli)
 	monitors := newMonitors(conf, sniper)
-	factory := newFactory(conf, ethClientWrite)
-	swarm := newBees(ctx, ethClientWrite)
+	factory := newFactory(conf, ecli)
+	swarm := newBees(ctx, ecli)
 	monitorEngine := service.NewMonitorEngine(monitors...)
-	sniperClient := service.NewSniper(ethClientWrite, factory, swarm, sniper)
-	uniLiquidityClient := newUniswapLiquidityClient(ethClientWrite, sniperClient, sniper)
+	sniperClient := service.NewSniper(ecli, factory, swarm, sniper)
+	uniLiquidityClient := newUniswapLiquidityClient(ecli, sniperClient, sniper)
 
 	txClassifierUseCase := newTxClassifierUseCase(conf, monitorEngine, uniLiquidityClient)
 
-	txController := controller.NewTransaction(ethClientWrite, txClassifierUseCase.Classify)
+	txController := controller.NewTransaction(ecli, txClassifierUseCase.Classify)
 
 	log.Info("igniting engine")
 	NewEngine(rpcClientRead, txController).Run(ctx)

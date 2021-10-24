@@ -12,7 +12,7 @@ Use at you own risk.
 
 AX-50 is a frontrunning bot primarily aimed at liquidity sniping on AMMs like PancakeSwap. Liquidity sniping is the most profitable way I found to use it. But you can add pretty much any feature involving frontrunning (liquidation, sandwich attacks etc..).
 
-Being able to frontrun implies building on top of GETH client and having access to the mempool. My BSC node was running on AWS, hence the `config/` folder that I needed to send back and forth to the server with sniping config.
+Being able to frontrun implies building on top of GETH client and having access to the mempool. My BSC node was running on AWS, hence the `config/` folder that I needed to send back and forth to the server with sniping config. It's HIGHLY RECOMMENDED to have your own node for liquidity sniping (and pretty much any frontrunning operation).
 
 The bot is divided in 2 sections:
 1. Configurations: An initial phase (previous to the snipe) where we configure the environment:
@@ -24,7 +24,7 @@ The bot is divided in 2 sections:
 
 1. Create a `config/local.json` file following the template provided inside the directory (`config/template.local.json`). This will be used by our scripts in the configuration and sniping phase. (you won't have yet the trigger address, this comes later)
 
-2. Deploy all contracts using the truffle migrations (create an `.env` file with `BINANCE_MAINNET_WALLET_PRIVATE_KEY` or `BINANCE_MAINNET_WALLET_MNEMONIC`). Contract deployment uses the write chain provided in `config/local.json` alongside different addresses configured (eg. the factory one) so make sure to have it properly configured beforehand. Running them should configure:
+2. Deploy all contracts using the truffle migrations (create an `.env` file with `BINANCE_MAINNET_WALLET_PRIVATE_KEY` or `BINANCE_MAINNET_WALLET_MNEMONIC`). Contract deployment uses variables provided in `config/local.json` (eg. the factory one) so make sure to have it properly configured beforehand. Running them should configure:
     - The trigger custom router address with your CustomRouter
     - The trigger admin with the deployer wallet (this is important)
     - Trigger and Router addresses (factory, native wrapped coin, factory creationCode hash)
