@@ -36,20 +36,25 @@ func NewMonitorEngine(m ...Monitor) *MonitorEngine {
 		monitors: m,
 		buf:      make([]entry, 0),
 		mut:      new(sync.Mutex),
-		t:        time.NewTicker(interval), // func-opts if this is OSS some day, Also expose Stop.
 	}
 
-	go func(ch <-chan time.Time) {
-		defer recovery()
-		for range ch {
-			e.monitorPendings()
-		}
-	}(e.t.C)
+	if len(m) > 0 {
+		e.t = time.NewTicker(interval) // func-opts if this is OSS some day, Also expose Stop.
+		go func(ch <-chan time.Time) {
+			defer recovery()
+			for range ch {
+				e.monitorPendings()
+			}
+		}(e.t.C)
+	}
 
 	return e
 }
 
 func (e *MonitorEngine) Monitor(ctx context.Context, tx *types.Transaction) {
+	if len(e.monitors) == 0 {
+		return // noop
+	}
 	e.push(ctx, tx)
 }
 

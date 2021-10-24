@@ -32,6 +32,8 @@ func NewTransaction(resolver transactionResolver, handler transactionHandler) *T
 }
 
 func (c *Transaction) Snipe(ctx context.Context, h common.Hash) error {
+	log.Trace(fmt.Sprintf("new tx: %s", h.Hex()))
+
 	// Get transaction object from hash by querying the client
 	tx, pending, err := c.resolver.TransactionByHash(ctx, h)
 

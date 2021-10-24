@@ -21,10 +21,23 @@ const (
 	configFile          = "local"
 	beeBookFile         = "bee_book"
 
-	logLevel = log.LvlDebug
+	// workers is the number of concurrent jobs consuming txs from the pool,
+	// be careful not using something too low if the chain has high throughput
+	// (else you will see all txs already confirmed because of your lack of processing power)
+	// Using something too high will simply consume more resources on your end, try looking for the
+	// sweet spot where you're not the bottleneck of the stream nor you are wasting resources.
+	workers = 1000
+
+	// logLevel of the logs. Using DEBUG/INFO may suffice,
+	// if you want to check that everything works fine set LvlTrace (the lowest)
+	logLevel = log.LvlInfo
 )
 
 func main() {
+	if workers <= 0 {
+		panic("workers > 0")
+	}
+
 	configureLog(logLevel)
 	ctx := context.Background()
 
