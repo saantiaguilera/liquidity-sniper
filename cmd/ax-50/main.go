@@ -80,7 +80,7 @@ func main() {
 
 	txClassifierUseCase := newTxClassifierUseCase(conf, monitorEngine, uniLiquidityClient)
 
-	txController := controller.NewTransaction(ethClientRead, txClassifierUseCase.Classify)
+	txController := controller.NewTransaction(ethClientWrite, txClassifierUseCase.Classify)
 
 	log.Info("igniting engine")
 	NewEngine(rpcClientRead, txController).Run(ctx)

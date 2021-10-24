@@ -48,6 +48,6 @@ func (c *Transaction) Snipe(ctx context.Context, h common.Hash) error {
 	if pending {
 		return c.handler(ctx, tx)
 	}
-	log.Debug("tx already confirmed")
+	log.Warn("tx already confirmed") // we shouldn't be seeing txs confirmed, this means we are having a bottleneck against the read node
 	return nil
 }
