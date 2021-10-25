@@ -9,7 +9,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rpc"
 
@@ -50,7 +49,7 @@ func newRPCClient(ctx context.Context, rpcURL string) *rpc.Client {
 	return rpcClient
 }
 
-func newSniperEntity(ctx context.Context, conf *Config, ethClient *ethclient.Client) domain.Sniper {
+func newSniperEntity(ctx context.Context, conf *Config, ethClient *service.EthClientCluster) domain.Sniper {
 	chainID, err := ethClient.NetworkID(ctx)
 	if err != nil {
 		panic(err)
@@ -89,7 +88,7 @@ func newMonitors(conf *Config, sniper domain.Sniper) []service.Monitor {
 	return monitors
 }
 
-func newFactory(conf *Config, ethClient *ethclient.Client) *uniswap.IUniswapV2Factory {
+func newFactory(conf *Config, ethClient *service.EthClientCluster) *uniswap.IUniswapV2Factory {
 	factoryAddr := conf.Contracts.Factory.Addr()
 	factory, err := uniswap.NewIUniswapV2Factory(factoryAddr, ethClient)
 	if err != nil {
@@ -99,7 +98,7 @@ func newFactory(conf *Config, ethClient *ethclient.Client) *uniswap.IUniswapV2Fa
 	return factory
 }
 
-func newBees(ctx context.Context, ethClient *ethclient.Client) []*service.Bee {
+func newBees(ctx context.Context, ethClient *service.EthClientCluster) []*service.Bee {
 	dir := os.Getenv(configFolderEnv)
 	if len(dir) == 0 {
 		dir = configFolderDefault
@@ -139,7 +138,7 @@ func newBees(ctx context.Context, ethClient *ethclient.Client) []*service.Bee {
 }
 
 func newUniswapLiquidityClient(
-	e *ethclient.Client,
+	e *service.EthClientCluster,
 	s *service.Sniper,
 	sn domain.Sniper,
 ) *service.UniswapLiquidity {

@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/rpc"
 
 	"github.com/saantiaguilera/liquidity-sniper/pkg/controller"
+	"github.com/saantiaguilera/liquidity-sniper/pkg/service"
 )
 
 type (
@@ -73,7 +74,7 @@ func (e *Engine) consumeBlocking(ctx context.Context, ch <-chan common.Hash) {
 	for {
 		select {
 		case txHash := <-ch:
-			if err := e.ctrl.Snipe(ctx, txHash); err != nil {
+			if err := e.ctrl.Snipe(service.NewLoadBalancedContext(ctx), txHash); err != nil {
 				log.Error(err.Error())
 			}
 		case <-ctx.Done():
