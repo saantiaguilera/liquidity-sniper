@@ -39,7 +39,7 @@ func main() {
 	}
 
 	configureLog(logLevel)
-	ctx := service.NewLoadBalancedContext(context.Background())
+	ctx := context.Background()
 
 	dir := os.Getenv(configFolderEnv)
 	if len(dir) == 0 {
@@ -63,6 +63,7 @@ func main() {
 		panic("no clients provided for snipe")
 	}
 	ecli := service.NewEthClientCluster(writeChains...)
+	ctx = ecli.NewLoadBalancedContext(ctx)
 
 	sniper := newSniperEntity(ctx, conf, ecli)
 	monitors := newMonitors(conf, sniper)
@@ -77,5 +78,5 @@ func main() {
 	txController := controller.NewTransaction(ecli, txClassifierUseCase.Classify)
 
 	log.Info("igniting engine")
-	NewEngine(rpcClientRead, txController).Run(ctx)
+	NewEngine(rpcClientRead, txController, ecli.NewLoadBalancedContext).Run(ctx)
 }

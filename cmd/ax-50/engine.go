@@ -11,20 +11,23 @@ import (
 	"github.com/ethereum/go-ethereum/rpc"
 
 	"github.com/saantiaguilera/liquidity-sniper/pkg/controller"
-	"github.com/saantiaguilera/liquidity-sniper/pkg/service"
 )
 
 type (
 	Engine struct {
-		client *rpc.Client
-		ctrl   *controller.Transaction
+		client       *rpc.Client
+		ctrl         *controller.Transaction
+		ctxDecorator ctxDecorator
 	}
+
+	ctxDecorator func(context.Context) context.Context
 )
 
-func NewEngine(cl *rpc.Client, ctrl *controller.Transaction) *Engine {
+func NewEngine(cl *rpc.Client, ctrl *controller.Transaction, cd ctxDecorator) *Engine {
 	return &Engine{
-		client: cl,
-		ctrl:   ctrl,
+		client:       cl,
+		ctrl:         ctrl,
+		ctxDecorator: cd,
 	}
 }
 
@@ -74,7 +77,7 @@ func (e *Engine) consumeBlocking(ctx context.Context, ch <-chan common.Hash) {
 	for {
 		select {
 		case txHash := <-ch:
-			if err := e.ctrl.Snipe(service.NewLoadBalancedContext(ctx), txHash); err != nil {
+			if err := e.ctrl.Snipe(e.ctxDecorator(ctx), txHash); err != nil {
 				log.Error(err.Error())
 			}
 		case <-ctx.Done():

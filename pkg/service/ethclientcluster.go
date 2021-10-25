@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"math/big"
-	"sync/atomic"
+	"sync"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -15,6 +15,9 @@ import (
 type (
 	EthClientCluster struct {
 		delegates []EthClient
+
+		count uint
+		mut   *sync.Mutex
 	}
 
 	EthClient interface {
@@ -31,19 +34,23 @@ type (
 	ethClientClusterCtxKey struct{}
 )
 
-var (
-	globalC uint64 = 0
-)
-
 func NewEthClientCluster(d ...EthClient) *EthClientCluster {
 	return &EthClientCluster{
 		delegates: d,
+		count:     0,
+		mut:       new(sync.Mutex),
 	}
 }
 
-func NewLoadBalancedContext(ctx context.Context) context.Context {
-	atomic.AddUint64(&globalC, 1)
-	return context.WithValue(ctx, ethClientClusterCtxKey{}, globalC)
+func (e *EthClientCluster) NewLoadBalancedContext(ctx context.Context) context.Context {
+	if len(e.delegates) == 1 { // early return if no need to decorate.
+		return ctx
+	}
+
+	e.mut.Lock()
+	defer e.mut.Unlock()
+	e.count++ // overflow handled transparently
+	return context.WithValue(ctx, ethClientClusterCtxKey{}, e.count)
 }
 
 func (e *EthClientCluster) delegateAt(ctx context.Context) EthClient {
@@ -51,12 +58,12 @@ func (e *EthClientCluster) delegateAt(ctx context.Context) EthClient {
 		return e.delegates[0]
 	}
 
-	n, ok := ctx.Value(ethClientClusterCtxKey{}).(uint64)
+	n, ok := ctx.Value(ethClientClusterCtxKey{}).(uint)
 	if !ok {
 		log.Warn("trying to use an eth client without providing a load balanced context")
 		n = 0
 	}
-	return e.delegates[(int(n) % len(e.delegates))]
+	return e.delegates[(int(n % uint(len(e.delegates))))]
 }
 
 func (e *EthClientCluster) CodeAt(ctx context.Context, contract common.Address, blockNumber *big.Int) ([]byte, error) {
