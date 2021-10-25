@@ -41,13 +41,13 @@ func (c *Transaction) Snipe(ctx context.Context, h common.Hash) error {
 		if err == ethereum.NotFound {
 			return nil // don't track. probably a failed tx
 		}
-		return fmt.Errorf("error getting tx %s by hash: %s", h, err) // nothing to do.
+		return fmt.Errorf("error getting tx %s by hash: %s", h.Hex(), err) // nothing to do.
 	}
 
 	// If tx is valid and still unconfirmed
 	if pending {
 		return c.handler(ctx, tx)
 	}
-	log.Warn("tx already confirmed") // we shouldn't be seeing txs confirmed, this means we are having a bottleneck against the read node
+	log.Warn(fmt.Sprintf("tx already confirmed: %s", h.Hex())) // we shouldn't be seeing txs confirmed, this means we are having a bottleneck against the read node
 	return nil
 }
