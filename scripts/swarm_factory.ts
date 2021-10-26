@@ -11,10 +11,10 @@ const { rounds, path, spread_amount } = swarm;
 const { disperser } = accounts;
 
 const bscProvider = new ethers.providers.JsonRpcProvider(
-    chain.configure.node,
+    chain.nodes.configure,
     {
-        chainId: chain.configure.id,
-        name: chain.configure.name,
+        chainId: chain.id,
+        name: chain.name,
     }
 )
 

@@ -1,22 +1,14 @@
 {
     "chain": {
-        "stream": {
-            "node": "/home/ec2-user/geth/geth.ipc",
-            "id": 56,
-            "name": "bsc-mainnet"
-        },
-        "snipe": {
-            "nodes": [
+        "nodes": {
+            "stream": "/home/ec2-user/geth/geth.ipc",
+            "snipe": [
                 "/home/ec2-user/geth/geth.ipc"
             ],
-            "id": 56,
-            "name": "bsc-mainnet"
+            "configure": "https://bsc-dataseed.binance.org/"
         },
-        "configure": {
-            "node": "https://bsc-dataseed.binance.org/",
-            "id": 56,
-            "name": "bsc-mainnet"
-        }
+        "id": 56,
+        "name": "bsc-mainnet"
     },
     "order": {
         "size": 4,

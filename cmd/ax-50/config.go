@@ -18,20 +18,14 @@ type (
 	}
 
 	ChainContainer struct {
-		Stream Chain      `json:"stream"`
-		Snipe  MultiChain `json:"snipe"`
+		Nodes ChainNodes `json:"nodes"`
+		ID    uint       `json:"id"`
+		Name  string     `json:"name"`
 	}
 
-	Chain struct {
-		Node string `json:"node"`
-		ID   uint   `json:"id"`
-		Name string `json:"name"`
-	}
-
-	MultiChain struct {
-		Nodes []string `json:"nodes"`
-		ID    uint     `json:"id"`
-		Name  string   `json:"name"`
+	ChainNodes struct {
+		Stream string   `json:"stream"`
+		Snipe  []string `json:"snipe"`
 	}
 
 	Contracts struct {

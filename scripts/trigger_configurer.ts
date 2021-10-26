@@ -11,10 +11,10 @@ const minimumTokens = order.expected_tokens;
 const { admin } = accounts;
 
 const bscProvider = new ethers.providers.JsonRpcProvider(
-    chain.configure.node,
+    chain.nodes.configure,
     {
-        chainId: chain.configure.id,
-        name: chain.configure.name,
+        chainId: chain.id,
+        name: chain.name,
     }
 )
 

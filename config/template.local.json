@@ -1,25 +1,18 @@
 {
   "chain": {
-    "stream": {
-      "node": "rpc to read/stream txs from the mempool, should be an ipc or wss node. MUST HAVE SAME CHAIN ID AS OTHERS!!",
-      "id": 56,
-      "name": "bsc-mainnet -> name of the chain. id is the chain_id"
-    },
-    "snipe": {
-      "nodes": [
-        "rpc to write/push/broadcast our txs to the nodes and query them with any info we may need, can be ipc/wss or json-rpc.",
+    "nodes": {
+      "stream": "rpc to stream new pending txs from the mempool, should be an ipc or wss node. MUST HAVE SAME CHAIN ID AS OTHERS!!",
+      "snipe": [
+        "nodes to write/push/broadcast our txs and query them with any info we may need, can be ipc/wss or json-rpc. Ideally ipc/wss for lower latency.",
         "can be the same as the stream one or simply a known one eg. https://data-seed-prebsc-2-s2.binance.org:8545/",
-        "it can be more than one. this is useful ONLY if you don't have your own full node (as you will probably depend on free rate-limited ones)",
-        "if more than one is provided we will perform a load balancing through round robin to avoid rate limiting a single one."
+        "it can be more than one -> this is useful ONLY if you don't have your own full node (as you will probably depend on free rate-limited ones)",
+        "if more than one is provided we will perform a load balancing through round robin to avoid rate limiting a single one.",
+        "it's highly recommended to have your own full node, for obvious reasons"
       ],
-      "id": 56,
-      "name": "bsc-mainnet -> name of the chain/s. id is the chain_id. MUST HAVE SAME CHAIN ID AS OTHERS!!"
+      "configure": "rpc to configure the sniper. MUST BE JSON-RPC. MUST HAVE SAME CHAIN ID AS OTHERS!!"
     },
-    "configure": {
-      "node": "rpc to configure the sniper. MUST BE JSON-RPC. MUST HAVE SAME CHAIN ID AS OTHERS!!",
-      "id": 56,
-      "name": "bsc-mainnet -> name of the chain. id is the chain_id"
-    }
+    "id": 56,
+    "name": "bsc-mainnet -> name of the chain. id is the chain id, eg 56 for binance mainnet"
   },
   "order": {
     "size": 2,

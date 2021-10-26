@@ -1,12 +1,8 @@
 {
     "chain": {
-        "stream": {
-            "node": "wss://speedy-nodes-nyc.moralis.io/<your api key>/bsc/mainnet/ws",
-            "id": 56,
-            "name": "bsc-mainnet"
-        },
-        "snipe": {
-            "nodes": [
+        "nodes": {
+            "stream": "wss://speedy-nodes-nyc.moralis.io/<your api key>/bsc/mainnet/ws",
+            "snipe": [
                 "https://bsc-dataseed.binance.org/",
                 "https://bsc-dataseed1.binance.org/", 
                 "https://bsc-dataseed2.binance.org/",
@@ -22,14 +18,10 @@
                 "https://bsc-dataseed4.ninicoin.io/",
                 "wss://bsc-ws-node.nariox.org:443"
             ],
-            "id": 56,
-            "name": "bsc-mainnet"
+            "configure": "https://bsc-dataseed.binance.org/"
         },
-        "configure": {
-            "node": "https://bsc-dataseed.binance.org/",
-            "id": 56,
-            "name": "bsc-mainnet"
-        }
+        "id": 56,
+        "name": "bsc-mainnet"
     },
     "order": {
         "size": 2.5,

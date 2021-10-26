@@ -52,11 +52,11 @@ func main() {
 
 	log.Info(fmt.Sprintf("configurations parsed: %+v", conf))
 
-	rpcClientRead := newRPCClient(ctx, conf.Chains.Stream.Node)
+	rpcClientRead := newRPCClient(ctx, conf.Chains.Nodes.Stream)
 
-	writeChains := make([]service.EthClient, 0, len(conf.Chains.Snipe.Nodes))
-	for i := 0; i < len(conf.Chains.Snipe.Nodes); i++ {
-		rpcClientWrite := newRPCClient(ctx, conf.Chains.Snipe.Nodes[i])
+	writeChains := make([]service.EthClient, 0, len(conf.Chains.Nodes.Snipe))
+	for i := 0; i < len(conf.Chains.Nodes.Snipe); i++ {
+		rpcClientWrite := newRPCClient(ctx, conf.Chains.Nodes.Snipe[i])
 		writeChains = append(writeChains, ethclient.NewClient(rpcClientWrite))
 	}
 	if len(writeChains) == 0 {
