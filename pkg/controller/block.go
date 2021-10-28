@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	blockNotFoundRetry = 200 * time.Millisecond
+	blockNotFoundRetryDuration = 200 * time.Millisecond
 )
 
 type (
@@ -46,7 +46,7 @@ func (c *Block) Snipe(ctx context.Context, bn *big.Int) error {
 		if err == ethereum.NotFound {
 			// retry block with delay, maybe node had a slow sync?
 			log.Warn(fmt.Sprintf("block %s not found: retrying", bn.String()))
-			time.AfterFunc(blockNotFoundRetry, func() {
+			time.AfterFunc(blockNotFoundRetryDuration, func() {
 				if err := c.Snipe(ctx, bn); err != nil {
 					log.Error(err.Error())
 				}
