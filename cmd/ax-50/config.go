@@ -7,8 +7,23 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+const (
+	// SniperModePendingTxs is the fastest and best rewarding mode, at the cost of being the most resource intensive.
+	// This mode should only be used if you have your own full node. Else you will probably face rate limits, latency,
+	// txs bribings, etc.
+	// This mode streams all pending txs as they get broadcasted to a node and added to the mempool to be picked up by
+	// a block (and later be mined). Hence since the tx isn't even processed yet, we have far more time to place our snipe
+	// txs.
+	SniperModePendingTxs SniperMode = "pending_txs"
+	// SniperModeBlockScan is a mode were we stream new blocks as they are added to the head of the blockchain.
+	// This mode is lower than the pending txs because txs here have already been mined in the block, but still
+	// offers for people without nodes a far better experience than a manual snipe.
+	SniperModeBlockScan SniperMode = "new_blocks"
+)
+
 type (
-	Address string
+	Address    string
+	SniperMode string
 
 	Config struct {
 		Chains    ChainContainer `json:"chain"`
@@ -24,8 +39,8 @@ type (
 	}
 
 	ChainNodes struct {
-		Stream string   `json:"stream"`
-		Snipe  []string `json:"snipe"`
+		Stream string `json:"stream"`
+		Snipe  string `json:"snipe"`
 	}
 
 	Contracts struct {
@@ -41,8 +56,9 @@ type (
 	}
 
 	Sniper struct {
-		MinLiquidity float32  `json:"minimum_liquidity"`
-		Monitors     Monitors `json:"monitors"`
+		Mode         SniperMode `json:"mode"`
+		MinLiquidity float32    `json:"minimum_liquidity"`
+		Monitors     Monitors   `json:"monitors"`
 	}
 
 	Monitors struct {

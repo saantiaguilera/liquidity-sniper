@@ -28,6 +28,8 @@ type (
 		TransactionByHash(ctx context.Context, hash common.Hash) (tx *types.Transaction, isPending bool, err error)
 		TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error)
 
+		BlockByNumber(context.Context, *big.Int) (b *types.Block, err error)
+
 		NetworkID(context.Context) (*big.Int, error)
 	}
 
@@ -120,4 +122,8 @@ func (e *EthClientCluster) TransactionReceipt(ctx context.Context, txHash common
 
 func (e *EthClientCluster) NetworkID(ctx context.Context) (*big.Int, error) {
 	return e.delegateAt(ctx).NetworkID(ctx)
+}
+
+func (e *EthClientCluster) BlockByNumber(ctx context.Context, n *big.Int) (b *types.Block, err error) {
+	return e.delegateAt(ctx).BlockByNumber(ctx, n)
 }

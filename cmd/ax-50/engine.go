@@ -6,28 +6,30 @@ import (
 	"runtime/debug"
 	"sync"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rpc"
-
-	"github.com/saantiaguilera/liquidity-sniper/pkg/controller"
 )
 
 type (
 	Engine struct {
-		client       *rpc.Client
-		ctrl         *controller.Transaction
-		ctxDecorator ctxDecorator
+		client *rpc.Client
+
+		sub    engineSub
+		middle engineMid
+		ctrl   engineCtrl
 	}
 
-	ctxDecorator func(context.Context) context.Context
+	engineSub  func(ctx context.Context, c *rpc.Client, ch chan<- interface{}) (*rpc.ClientSubscription, error)
+	engineMid  func(context.Context) context.Context
+	engineCtrl func(ctx context.Context, v interface{}) error
 )
 
-func NewEngine(cl *rpc.Client, ctrl *controller.Transaction, cd ctxDecorator) *Engine {
+func NewEngine(cl *rpc.Client, sub engineSub, mid engineMid, ctrl engineCtrl) *Engine {
 	return &Engine{
-		client:       cl,
-		ctrl:         ctrl,
-		ctxDecorator: cd,
+		client: cl,
+		sub:    sub,
+		middle: mid,
+		ctrl:   ctrl,
 	}
 }
 
@@ -36,13 +38,13 @@ func (e *Engine) Run(ctx context.Context) {
 	ctx, canc = context.WithCancel(ctx)
 
 	// Go channel to pipe data from client subscription
-	ch := make(chan common.Hash, workers)
+	ch := make(chan interface{}, workers)
 
 	// Consume in workers the new txs
 	wg := new(sync.WaitGroup)
 	wg.Add(workers)
 	for i := 0; i < workers; i++ {
-		go func(ctx context.Context, ch <-chan common.Hash, wg *sync.WaitGroup) {
+		go func(ctx context.Context, ch <-chan interface{}, wg *sync.WaitGroup) {
 			defer wg.Done()
 			defer recovery(canc) // if a worker panics we stop everything
 			e.consumeBlocking(ctx, ch)
@@ -56,8 +58,8 @@ func (e *Engine) Run(ctx context.Context) {
 	wg.Wait()
 }
 
-func (e *Engine) subscribeSafe(ctx context.Context, ch chan<- common.Hash, canc func()) {
-	s, err := e.client.EthSubscribe(ctx, ch, "newPendingTransactions")
+func (e *Engine) subscribeSafe(ctx context.Context, ch chan<- interface{}, canc func()) {
+	s, err := e.sub(ctx, e.client, ch)
 	if err != nil {
 		panic(err)
 	}
@@ -73,11 +75,11 @@ func (e *Engine) subscribeSafe(ctx context.Context, ch chan<- common.Hash, canc 
 	}()
 }
 
-func (e *Engine) consumeBlocking(ctx context.Context, ch <-chan common.Hash) {
+func (e *Engine) consumeBlocking(ctx context.Context, ch <-chan interface{}) {
 	for {
 		select {
-		case txHash := <-ch:
-			if err := e.ctrl.Snipe(e.ctxDecorator(ctx), txHash); err != nil {
+		case v := <-ch:
+			if err := e.ctrl(e.middle(ctx), v); err != nil {
 				log.Error(err.Error())
 			}
 		case <-ctx.Done():

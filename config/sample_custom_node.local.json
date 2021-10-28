@@ -2,9 +2,7 @@
     "chain": {
         "nodes": {
             "stream": "/home/ec2-user/geth/geth.ipc",
-            "snipe": [
-                "/home/ec2-user/geth/geth.ipc"
-            ],
+            "snipe": "/home/ec2-user/geth/geth.ipc",
             "configure": "https://bsc-dataseed.binance.org/"
         },
         "id": 56,
@@ -40,6 +38,7 @@
         "path": "./config/bee_book.json"
     },
     "sniper": {
+        "mode": "pending_txs",
         "minimum_liquidity": 80,
         "monitors": {
             "address_list": {

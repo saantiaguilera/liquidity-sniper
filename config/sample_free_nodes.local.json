@@ -2,22 +2,7 @@
     "chain": {
         "nodes": {
             "stream": "wss://speedy-nodes-nyc.moralis.io/<your api key>/bsc/mainnet/ws",
-            "snipe": [
-                "https://bsc-dataseed.binance.org/",
-                "https://bsc-dataseed1.binance.org/", 
-                "https://bsc-dataseed2.binance.org/",
-                "https://bsc-dataseed3.binance.org/",
-                "https://bsc-dataseed4.binance.org/",
-                "https://bsc-dataseed1.defibit.io/",
-                "https://bsc-dataseed2.defibit.io/",
-                "https://bsc-dataseed3.defibit.io/",
-                "https://bsc-dataseed4.defibit.io/",
-                "https://bsc-dataseed1.ninicoin.io/",
-                "https://bsc-dataseed2.ninicoin.io/",
-                "https://bsc-dataseed3.ninicoin.io/",
-                "https://bsc-dataseed4.ninicoin.io/",
-                "wss://bsc-ws-node.nariox.org:443"
-            ],
+            "snipe": "wss://speedy-nodes-nyc.moralis.io/<your api key>/bsc/mainnet/ws",
             "configure": "https://bsc-dataseed.binance.org/"
         },
         "id": 56,
@@ -53,6 +38,7 @@
         "path": "./config/bee_book.json"
     },
     "sniper": {
+        "mode": "new_blocks",
         "minimum_liquidity": 80,
         "monitors": {
             "address_list": {

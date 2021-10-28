@@ -2,14 +2,10 @@
   "chain": {
     "nodes": {
       "stream": "rpc to stream new pending txs from the mempool, should be an ipc or wss node. MUST HAVE SAME CHAIN ID AS OTHERS!!",
-      "snipe": [
-        "nodes to write/push/broadcast our txs and query them with any info we may need, can be ipc/wss or json-rpc. Ideally ipc/wss for lower latency.",
-        "can be the same as the stream one or simply a known one eg. https://data-seed-prebsc-2-s2.binance.org:8545/",
-        "it can be more than one -> this is useful ONLY if you don't have your own full node (as you will probably depend on free rate-limited ones)",
-        "if more than one is provided we will perform a load balancing through round robin to avoid rate limiting a single one.",
-        "it's highly recommended to have your own full node, for obvious reasons"
-      ],
-      "configure": "rpc to configure the sniper. MUST BE JSON-RPC. MUST HAVE SAME CHAIN ID AS OTHERS!!"
+      "snipe": "rpc to write/push/broadcast our txs and query them with any info we may need, can be ipc/wss or json-rpc. Ideally ipc/wss for lower latency. MUST HAVE SAME CHAIN ID AS OTHERS!!",
+      "configure": "rpc to configure the sniper. MUST BE JSON-RPC. MUST HAVE SAME CHAIN ID AS OTHERS!!",
+      "dummy (you can delete this line)": "in pending_txs mode, 'snipe' and 'stream' nodes SHOULD BE THE SAME. Else you may have race conditions between gossiping nodes",
+      "dummy (you can delete this line)2": "in block mode, 'snipe' node can be whatever you like. You can even use a binance node (not recommended though because of degraded performance + latency + non wss/ipc)"
     },
     "id": 56,
     "name": "bsc-mainnet -> name of the chain. id is the chain id, eg 56 for binance mainnet"
@@ -51,8 +47,11 @@
     "dummy (you can delete this line)4": "spread_amount can be floating point UP TO 3 DECIMAL PLACES. eg: 0.123 bnb OK / 0.1234 bnb ERROR."
   },
   "sniper": {
+    "mode": "either 'pending_txs' or 'new_blocks'. By default is 'pending_txs'. Eg. new_blocks",
+    "dummy (you can delete this line)": "In pending_txs you will stream all pending txs as they arrive to the mempool. This is the ideal and best performant mode of sniping, but is way more resource intensive",
+    "dummy (you can delete this line)2": "In new_blocks you will query blocks as they are added to the head of the blockchain. This is not as good as pending txs, but it's still far better than a manual snipe. It's not resource intensive.",
     "minimum_liquidity": 0.01,
-    "dummy (you can delete this line)": "minimum_liquidity is the minimum amount you expect as collateral (the paired asset, eg WBNB) to be added in the addLiquidity tx so we snipe. This is because sometimes devs or other people add liquidity on their own to trigger bots or scam (but add way less liq. than the expected). If the addLiquidity has less than the min provided here, we don't snipe",
+    "dummy (you can delete this line)3": "minimum_liquidity is the minimum amount you expect as collateral (the paired asset, eg WBNB) to be added in the addLiquidity tx so we snipe. This is because sometimes devs or other people add liquidity on their own to trigger bots or scam (but add way less liq. than the expected). If the addLiquidity has less than the min provided here, we don't snipe",
     "monitors": {
       "address_list": {
         "enabled": false,
