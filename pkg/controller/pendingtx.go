@@ -46,6 +46,7 @@ func (c *PendingTransaction) Snipe(ctx context.Context, h common.Hash) error {
 	tx, pending, err := c.resolver.TransactionByHash(ctx, h)
 
 	if err == ethereum.NotFound {
+		// pending txs may be dropped from the mempool after some time, hence we don't retry forever and have a deadline.
 		tim, newCtx := c.newContextForRetries(ctx)
 		if tim < pendingTransactionNotFoundMaxRetries {
 			log.Debug(fmt.Sprintf("retrying not found tx: %s", h.Hex()))

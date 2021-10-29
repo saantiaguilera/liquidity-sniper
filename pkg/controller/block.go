@@ -44,7 +44,8 @@ func (c *Block) Snipe(ctx context.Context, bn *big.Int) error {
 
 	if err != nil {
 		if err == ethereum.NotFound {
-			// retry block with delay, maybe node had a slow sync?
+			// retry block forever with delay, all blocks should exist if they were added to the head.
+			// probably because stream!=snipe node connections
 			log.Warn(fmt.Sprintf("block %s not found: retrying", bn.String()))
 			time.AfterFunc(blockNotFoundRetryDuration, func() {
 				if err := c.Snipe(ctx, bn); err != nil {

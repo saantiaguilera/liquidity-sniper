@@ -5,7 +5,7 @@
       "snipe": "rpc to write/push/broadcast our txs and query them with any info we may need, can be ipc/wss or json-rpc. Ideally ipc/wss for lower latency. MUST HAVE SAME CHAIN ID AS OTHERS!!",
       "configure": "rpc to configure the sniper. MUST BE JSON-RPC. MUST HAVE SAME CHAIN ID AS OTHERS!!",
       "dummy (you can delete this line)": "in pending_txs mode, 'snipe' and 'stream' nodes SHOULD BE THE SAME. Else you may have race conditions between gossiping nodes",
-      "dummy (you can delete this line)2": "in block mode, 'snipe' node can be whatever you like. You can even use a binance node (not recommended though because of degraded performance + latency + non wss/ipc)"
+      "dummy (you can delete this line)2": "in block mode, 'snipe' node can be whatever you like. It's still HIGHLY RECOMMENDED to use the same node as 'stream'"
     },
     "id": 56,
     "name": "bsc-mainnet -> name of the chain. id is the chain id, eg 56 for binance mainnet"
