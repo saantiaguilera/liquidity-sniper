@@ -230,7 +230,7 @@ func (u *UniswapLiquidity) AddETH(ctx context.Context, tx *types.Transaction) er
 				}
 			} else {
 				log.Info(fmt.Sprintf(
-					"liquidity network (BNB/ETH?) added but lower than expected: %.4f vs %.4f expected",
+					"liquidity added but lower than expected: %.4f vs %.4f expected",
 					formatETHWeiToEther(tx.Value()),
 					formatETHWeiToEther(u.sniperMinLiq),
 				))

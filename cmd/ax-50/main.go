@@ -51,12 +51,12 @@ func main() {
 	}
 	conf, err := NewConfigFromFile(fmt.Sprintf("%s/%s.json", dir, configFile))
 	if err != nil {
-		panic(err) // halt immediately
+		panic(err)
 	}
 
 	log.Info(fmt.Sprintf("configurations parsed: %+v", conf))
 
-	rpcClientRead := newRPCClient(ctx, conf.Chains.Nodes.Stream)
+	rpcClientStream := newRPCClient(ctx, conf.Chains.Nodes.Stream)
 
 	/*
 	* Currently we only allow one write client because:
@@ -66,10 +66,17 @@ func main() {
 	*
 	* Still, we leave the clustered load balancer in case in a future we need it. It shouldn't degrade performance
 	* besides 2 function calls (that do nothing because they have early returns), so it's negligent.
+	*
+	* On the other hand, if the snipe and stream nodes are the same, we also reuse the connection because external nodes
+	* may have clusters through an ELB which internally are.. also different nodes.
+	* This doesn't matter much if it's a single instance self hosted node.
 	**/
-	rpcClientWrite := newRPCClient(ctx, conf.Chains.Nodes.Snipe)
-	ethClientWrite := ethclient.NewClient(rpcClientWrite)
-	ecli := service.NewEthClientCluster(ethClientWrite)
+	var ecli *service.EthClientCluster
+	if conf.Chains.Nodes.Snipe == conf.Chains.Nodes.Stream {
+		ecli = service.NewEthClientCluster(ethclient.NewClient(rpcClientStream))
+	} else {
+		ecli = service.NewEthClientCluster(ethclient.NewClient(newRPCClient(ctx, conf.Chains.Nodes.Snipe)))
+	}
 	ctx = ecli.NewLoadBalancedContext(ctx)
 
 	sniper := newSniperEntity(ctx, conf, ecli)
@@ -83,7 +90,7 @@ func main() {
 	txClassifierUseCase := newTxClassifierUseCase(conf, monitorEngine, uniLiquidityClient)
 
 	log.Info("igniting engine")
-	newEngine(conf, rpcClientRead, ecli, ecli.NewLoadBalancedContext, txClassifierUseCase).Run(ctx)
+	newEngine(conf, rpcClientStream, ecli, ecli.NewLoadBalancedContext, txClassifierUseCase).Run(ctx)
 }
 
 func newEngine(
