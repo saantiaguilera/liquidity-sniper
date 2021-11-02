@@ -17,7 +17,7 @@ type (
 	}
 
 	transactionClassifierMonitor  func(ctx context.Context, tx *types.Transaction)
-	TransactionClassifierStrategy func(ctx context.Context, tx *types.Transaction) error
+	TransactionClassifierStrategy func(ctx context.Context, tx *types.Transaction, pending bool) error
 )
 
 func NewTransactionClassifier(
@@ -33,7 +33,7 @@ func NewTransactionClassifier(
 	}
 }
 
-func (u *TransactionClassifier) Classify(ctx context.Context, tx *types.Transaction) error {
+func (u *TransactionClassifier) Classify(ctx context.Context, tx *types.Transaction, pending bool) error {
 	if tx.To() == nil {
 		log.Trace("tx is a contract deploy: " + tx.Hash().String())
 		return nil
@@ -46,7 +46,7 @@ func (u *TransactionClassifier) Classify(ctx context.Context, tx *types.Transact
 		copy(txFunctionHash[:], tx.Data()[:4])
 
 		if h, ok := u.strategies[txFunctionHash]; ok {
-			return h(ctx, tx)
+			return h(ctx, tx, pending)
 		}
 		log.Debug("found contract call to provided router address but not to a method we are looking for: " + tx.Hash().String())
 		return nil

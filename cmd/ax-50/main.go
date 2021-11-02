@@ -32,6 +32,22 @@ const (
 	// sweet spot where you're not the bottleneck of the stream nor you are wasting resources.
 	workers = 1000
 
+	// txGasMultiplier when sniping non pending txs (eg. through new_blocks mode)
+	// Since the add liquidity tx. is already confirmed there's no point in placing ourselves at the same priority
+	// as the tx (because it has already been mined), hence we use more gas than the used for it to
+	// increment our priority in the new block.
+	//
+	// It could be a static number too or we could estimate it but it would add latency to the bot, hence
+	// we assume the add liquidity tx mined had already a good gas price + the multiplier increment pushing us.
+	//
+	// txGasMultiplier is required to be >=1. Eg
+	//  - txGasMultiplier = 1: Same as the add liquidity tx gas price. No changes.
+	//  - txGasMultiplier = 1.5: 50% more than the add liquidity tx gas price. eg. if tx had gasPrice 10, our txs will have 15.
+	//  - txGasMultiplier = 0.5: Incorrect since it doesn't meet the constraints. Defaults to 1.
+	//
+	// This field is unused when the txs are already pending, thus when we are really frontrunning (eg. on pending_txs)
+	txGasMultiplier = 1.25
+
 	// logLevel of the logs. Using DEBUG/INFO may suffice,
 	// if you want to check that everything works fine set LvlTrace (the lowest)
 	logLevel = log.LvlInfo
