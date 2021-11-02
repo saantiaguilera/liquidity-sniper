@@ -150,6 +150,9 @@ func (u *UniswapLiquidity) getTokenSymbol(tokenAddress common.Address) string {
 	return sym
 }
 
+// Add checks when the tx is of addLiquidity in an UniswapV2 AMM fork.
+// If all our checks regarding the snipe passes (eg. the devs adding a minimum liquidity that we expect)
+// then we invoke the snipe
 func (u *UniswapLiquidity) Add(ctx context.Context, tx *types.Transaction) error {
 	sender, err := u.getTxSenderAddressQuick(tx)
 	if err != nil {
@@ -199,7 +202,9 @@ func (u *UniswapLiquidity) Add(ctx context.Context, tx *types.Transaction) error
 	return nil
 }
 
-// interest Sniping and filter addliquidity tx
+// AddETH checks when the tx is of addLiquidityETH in an UniswapV2 AMM fork.
+// If all our checks regarding the snipe passes (eg. the devs adding a minimum liquidity that we expect)
+// then we invoke the snipe
 // TODO Super similars, refactor?
 func (u *UniswapLiquidity) AddETH(ctx context.Context, tx *types.Transaction) error {
 	// parse the info of the swap so that we can access it easily

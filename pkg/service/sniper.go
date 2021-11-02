@@ -22,6 +22,8 @@ import (
 
 const (
 	nullHash = "0x0000000000000000000000000000000000000000000000000000000000000000"
+
+	sniperMaxWaitTimeForTx = 20 * time.Second
 )
 
 var (
@@ -137,9 +139,10 @@ func (c *Sniper) Snipe(ctx context.Context, gas *big.Int) error {
 	wg.Wait()
 	close(finishedTxRes)
 
+	success := false
 	for res := range finishedTxRes {
 		if res.Success {
-			// proudly displaying the tx receipt
+			success = true
 			for _, l := range res.Receipt.Logs {
 				if l.Address == c.sniperTTBAddr {
 					hexAmount := hex.EncodeToString(l.Data)
@@ -163,7 +166,10 @@ func (c *Sniper) Snipe(ctx context.Context, gas *big.Int) error {
 			}
 		}
 	}
-	return nil // TODO Add formal error handling in case snipe doesn't succeeds
+	if !success {
+		log.Warn("Sniping failed. Check the sent transactions to see the reason (eg. minimum expected quantity of tokens couldn't be achieved)")
+	}
+	return nil
 }
 
 // Format # of tokens transferred into required float
@@ -183,11 +189,10 @@ func (c *Sniper) formatERC20Decimals(tokensSent *big.Int, tokenAddress common.Ad
 	denominatorFloat := new(big.Float).SetInt(denominator)
 	// Divide and return the final result
 	final, _ := new(big.Float).Quo(tokensSentFloat, denominatorFloat).Float64()
-	// TODO Take big.Accuracy into account
 	return final, nil
 }
 
-// once all tx has been sent, check for status and feed StatusResults and WatchPending chan that are listening
+// once all tx has been sent, check for status
 func (c *Sniper) checkTxStatus(ctx context.Context, txHash common.Hash) txRes {
 	if txHash == common.HexToHash(nullHash) {
 		return txRes{
@@ -213,9 +218,8 @@ func (c *Sniper) checkTxStatus(ctx context.Context, txHash common.Hash) txRes {
 			log.Error(fmt.Sprintf("error getting tx by hash %s: %s", txHash.String(), err))
 		}
 
-		// fail fast after 5s
-		// TODO Use ctx?
-		if time.Now().Add(-5 * time.Second).After(s) {
+		// fail fast after waittime
+		if time.Now().Add(-sniperMaxWaitTimeForTx).After(s) {
 			return txRes{
 				Hash:    txHash,
 				Success: false,
@@ -253,7 +257,6 @@ func (c *Sniper) execute(ctx context.Context, bee *Bee, gasPrice *big.Int) commo
 		return common.HexToHash(nullHash)
 	}
 
-	// TODO Ctx timeout?
 	err = c.ethClient.SendTransaction(ctx, signedTxBee)
 
 	if err != nil {
