@@ -1,6 +1,6 @@
 # AX-50 Liquidity Sniper
 
-This bot requires you to run the GETH client + use ethers framework. All addresses and private keys contained have been changed for the sake of this public repo. 
+This bot requires you to run the GETH client + use ethers framework.
 
 Supports any EVM environment and UniSwapV2 forked AMM seemlessly.
 
@@ -8,16 +8,16 @@ This is heavily based on https://github.com/Supercycled/cake_sniper, so major th
 
 Use at you own risk.
 
-## Global Workflow
+## What is this
 
-AX-50 is a frontrunning bot primarily aimed at liquidity sniping on AMMs like PancakeSwap. Liquidity sniping is the most profitable way I found to use it. But you can add pretty much any feature involving frontrunning (liquidation, sandwich attacks etc..).
+AX-50 is a frontrunning bot primarily aimed at liquidity sniping on AMMs like PancakeSwap. Even though this repository serves as a liquidity sniper, it's architecture is flexible enough to allow any type of frontrunning operation to be built on top of it (eg. liquidations, sandwich attacks, etc).
 
-Being able to frontrun implies building on top of GETH client and having access to the mempool. My BSC node was running on AWS, hence the `config/` folder that I needed to send back and forth to the server with sniping config. It's HIGHLY RECOMMENDED to have your own node for liquidity sniping (and pretty much any frontrunning operation).
+Being able to frontrun implies building over GETH client and having access to the mempool. It's HIGHLY RECOMMENDED to have your own node for liquidity sniping (and pretty much any frontrunning operation). If you don't have access to a node of your own the bot still supports a less performant mode of sniping.
 
 The bot is divided in 2 sections:
-1. Configurations: An initial phase (previous to the snipe) where we configure the environment:
-    * A trigger contract which is setted up with the configuration of the token you want to snipe (token address, route of swap, amount, wallet address that receives, etc).
-    * A swarm of accounts/wallets that will clogg the mempool once the liquidity is added, executing the snipe. This swarm of accounts is useful because we will be racing against other bots trying to frontrun the liquidity addition. So the more accounts trying the better the odds. Ideally one of all the accounts will succesfully snipe while the others will fail/revert (without doing nothing, except wasting gas).
+1. Configurations: An initial phase (previous to the actual snipe) where we configure the environment:
+    * A trigger contract which is setted up with the configuration of the token you want to snipe (token address, route of swap, amount, wallet address that receives, etc). This trigger will be the one in charge of buying the tokens thus performing the snipe, when the time comes.
+    * A swarm of accounts/wallets that will clogg the mempool once the liquidity is added, executing the snipe through the trigger. This swarm of accounts is useful because we will be racing against other bots trying to frontrun the liquidity addition. So the more accounts trying the better the odds. Ideally one of all the accounts will succesfully snipe while the others will fail/revert (without doing nothing, except wasting gas).
 2. Sniping: Consists on a stimulus phase where we listen to a stimulus of a liquidity addition. Once we spot it we clogg the mempool with our own txs executing the trigger that will perform the snipe (one tx per account in the swarm). All txs have the same gas as the liquidity addition tx, so the mempool sets them (ideally) at the same priority as the add liq tx. addition, hence frontrunning others. Sniping can be performed in 2 modes: PendingTxs or Block. Each one offers vastly different results at the cost of resources.
     * PendingTxs: The most performant and profitable mode, but by far the most resource intensive. This mode observes pending txs arriving to the mempool whilst looking for the liquidity addition we expect.
     * Block: Far less performant mode but with way lower requirements. This mode observes newly mined blocks as they are added to the head of the blockchain and scans the txs in it, looking for the liquidity addition we expect.
