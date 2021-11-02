@@ -143,7 +143,11 @@ func newUniswapLiquidityClient(
 	sn domain.Sniper,
 ) *service.UniswapLiquidity {
 
-	v, err := service.NewUniswapLiquidity(e, s, sn)
+	mul := txGasMultiplier
+	if mul < 1 {
+		mul = 1
+	}
+	v, err := service.NewUniswapLiquidity(e, s, sn, new(big.Float).SetFloat64(mul))
 	if err != nil {
 		panic(err)
 	}

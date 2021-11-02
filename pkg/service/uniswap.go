@@ -14,6 +14,10 @@ import (
 	"github.com/saantiaguilera/liquidity-sniper/third_party/erc20"
 )
 
+var (
+	minGasMultiplier = new(big.Float).SetInt64(1) // minimum gas multiplier. Should at least be 1, else it's lower than the provided.
+)
+
 type (
 	UniswapLiquidity struct {
 		ethClient    uniswapLiquidityETHClient
@@ -24,6 +28,8 @@ type (
 		sniperTokenPaired common.Address
 		sniperMinLiq      *big.Int
 		sniperChainID     *big.Int
+
+		gasMultiplier *big.Float // useful when the tx is already confirmed and we are not really frontrunning per-se.
 	}
 
 	uniswapLiquidityETHClient interface {
@@ -61,6 +67,7 @@ func NewUniswapLiquidity(
 	e uniswapLiquidityETHClient,
 	s uniswapLiquiditySniperClient,
 	sn domain.Sniper,
+	gasMultiplier *big.Float,
 ) (*UniswapLiquidity, error) {
 
 	ttb := common.HexToAddress(sn.AddressTargetToken)
@@ -78,7 +85,103 @@ func NewUniswapLiquidity(
 		sniperTokenPaired: tp,
 		sniperMinLiq:      sn.MinimumLiquidity,
 		sniperChainID:     sn.ChainID,
+		gasMultiplier:     gasMultiplier,
 	}, nil
+}
+
+// Add checks when the tx is of addLiquidity in an UniswapV2 AMM fork.
+// If all our checks regarding the snipe passes (eg. the devs adding a minimum liquidity that we expect)
+// then we invoke the snipe
+func (u *UniswapLiquidity) Add(ctx context.Context, tx *types.Transaction, pending bool) error {
+	sender, err := u.getTxSenderAddressQuick(tx)
+	if err != nil {
+		return fmt.Errorf("error getting sender address: %s", err)
+	}
+
+	// parse the info of the swap so that we can access it easily
+	var addLiquidity = u.newInputFromTx(tx)
+
+	// security checks
+	// does the liquidity addition deals with the token i'm targetting?
+	if addLiquidity.TokenAddressA == u.sniperTTBAddr || addLiquidity.TokenAddressB == u.sniperTTBAddr {
+		// does the liquidity is added on the right pair?
+		if addLiquidity.TokenAddressA == u.sniperTokenPaired || addLiquidity.TokenAddressB == u.sniperTokenPaired {
+			tknBalanceSender, err := u.sniperTTBTkn.BalanceOf(nil, sender)
+			if err != nil {
+				return fmt.Errorf("error getting balance of token to buy: %s", err)
+			}
+
+			var amountTknMin *big.Int
+			var amountPairedMin *big.Int
+			if addLiquidity.TokenAddressA == u.sniperTTBAddr {
+				amountTknMin = addLiquidity.AmountTokenAMin
+				amountPairedMin = addLiquidity.AmountTokenBMin
+			} else {
+				amountTknMin = addLiquidity.AmountTokenBMin
+				amountPairedMin = addLiquidity.AmountTokenAMin
+			}
+			// we check if the liquidity provider really possess the liquidity he wants to add, because it is possible to be lured by other bots that fake liquidity addition.
+			checkBalanceTknLP := amountTknMin.Cmp(tknBalanceSender)
+			if checkBalanceTknLP == 0 || checkBalanceTknLP == -1 {
+				// we check if the liquidity provider add enough collateral (WBNB or BUSD) as expected by our configuration. Bc sometimes the dev fuck the pleb and add way less liquidity that was advertised on telegram.
+				if amountPairedMin.Cmp(u.sniperMinLiq) == 1 {
+					log.Info(fmt.Sprintf("snipe executed for tx: %s", tx.Hash().String()))
+					return u.sniperClient.Snipe(ctx, u.getGasPrice(tx, pending))
+				} else {
+					log.Info(fmt.Sprintf(
+						"liquidity added but lower than expected: %.4f %s vs %.4f expected",
+						formatETHWeiToEther(amountPairedMin),
+						u.getTokenSymbol(u.sniperTokenPaired),
+						formatETHWeiToEther(u.sniperMinLiq),
+					))
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// AddETH checks when the tx is of addLiquidityETH in an UniswapV2 AMM fork.
+// If all our checks regarding the snipe passes (eg. the devs adding a minimum liquidity that we expect)
+// then we invoke the snipe
+// TODO Super similars, refactor?
+func (u *UniswapLiquidity) AddETH(ctx context.Context, tx *types.Transaction, pending bool) error {
+	// parse the info of the swap so that we can access it easily
+	sender, err := u.getTxSenderAddressQuick(tx)
+	if err != nil {
+		return fmt.Errorf("error getting sender address: %s", err)
+	}
+
+	addLiquidity := u.newETHInputFromTx(tx)
+
+	tknBalanceSender, err := u.sniperTTBTkn.BalanceOf(nil, sender)
+	if err != nil {
+		return fmt.Errorf("error getting balance of token to buy: %s", err)
+	}
+
+	checkBalanceLP := addLiquidity.AmountTokenMin.Cmp(tknBalanceSender)
+
+	// security checks:
+	// does the liquidity addition deals with the token i'm targetting?
+	if addLiquidity.TokenAddress == u.sniperTTBAddr {
+		// we check if the liquidity provider really possess the liquidity he wants to add, because it is possible to be lured by other bots that fake liquidity addition.
+		if checkBalanceLP == 0 || checkBalanceLP == -1 {
+			// we check if the liquidity provider add enough collateral (WBNB or BUSD) as expected by our configuration. Bc sometimes the dev fuck the pleb and add way less liquidity that was advertised on telegram.
+			if tx.Value().Cmp(u.sniperMinLiq) == 1 {
+				if addLiquidity.AmountETHMin.Cmp(u.sniperMinLiq) == 1 {
+					log.Info(fmt.Sprintf("snipe executed for tx: %s", tx.Hash().String()))
+					return u.sniperClient.Snipe(ctx, u.getGasPrice(tx, pending))
+				}
+			} else {
+				log.Info(fmt.Sprintf(
+					"liquidity added but lower than expected: %.4f vs %.4f expected",
+					formatETHWeiToEther(tx.Value()),
+					formatETHWeiToEther(u.sniperMinLiq),
+				))
+			}
+		}
+	}
+	return nil
 }
 
 func (u *UniswapLiquidity) newInputFromTx(tx *types.Transaction) uniswapAddLiquidityInput {
@@ -150,99 +253,21 @@ func (u *UniswapLiquidity) getTokenSymbol(tokenAddress common.Address) string {
 	return sym
 }
 
-// Add checks when the tx is of addLiquidity in an UniswapV2 AMM fork.
-// If all our checks regarding the snipe passes (eg. the devs adding a minimum liquidity that we expect)
-// then we invoke the snipe
-func (u *UniswapLiquidity) Add(ctx context.Context, tx *types.Transaction) error {
-	sender, err := u.getTxSenderAddressQuick(tx)
-	if err != nil {
-		return fmt.Errorf("error getting sender address: %s", err)
+func (u *UniswapLiquidity) getGasPrice(tx *types.Transaction, pending bool) *big.Int {
+	if pending {
+		return tx.GasPrice() // frontrunning with same gas price if tx is still in the mempool.
 	}
 
-	// parse the info of the swap so that we can access it easily
-	var addLiquidity = u.newInputFromTx(tx)
-
-	// security checks
-	// does the liquidity addition deals with the token i'm targetting?
-	if addLiquidity.TokenAddressA == u.sniperTTBAddr || addLiquidity.TokenAddressB == u.sniperTTBAddr {
-		// does the liquidity is added on the right pair?
-		if addLiquidity.TokenAddressA == u.sniperTokenPaired || addLiquidity.TokenAddressB == u.sniperTokenPaired {
-			tknBalanceSender, err := u.sniperTTBTkn.BalanceOf(nil, sender)
-			if err != nil {
-				return fmt.Errorf("error getting balance of token to buy: %s", err)
-			}
-
-			var amountTknMin *big.Int
-			var amountPairedMin *big.Int
-			if addLiquidity.TokenAddressA == u.sniperTTBAddr {
-				amountTknMin = addLiquidity.AmountTokenAMin
-				amountPairedMin = addLiquidity.AmountTokenBMin
-			} else {
-				amountTknMin = addLiquidity.AmountTokenBMin
-				amountPairedMin = addLiquidity.AmountTokenAMin
-			}
-			// we check if the liquidity provider really possess the liquidity he wants to add, because it is possible to be lured by other bots that fake liquidity addition.
-			checkBalanceTknLP := amountTknMin.Cmp(tknBalanceSender)
-			if checkBalanceTknLP == 0 || checkBalanceTknLP == -1 {
-				// we check if the liquidity provider add enough collateral (WBNB or BUSD) as expected by our configuration. Bc sometimes the dev fuck the pleb and add way less liquidity that was advertised on telegram.
-				if amountPairedMin.Cmp(u.sniperMinLiq) == 1 {
-					log.Info(fmt.Sprintf("snipe executed for tx: %s", tx.Hash().String()))
-					return u.sniperClient.Snipe(ctx, tx.GasPrice())
-				} else {
-					log.Info(fmt.Sprintf(
-						"liquidity added but lower than expected: %.4f %s vs %.4f expected",
-						formatETHWeiToEther(amountPairedMin),
-						u.getTokenSymbol(u.sniperTokenPaired),
-						formatETHWeiToEther(u.sniperMinLiq),
-					))
-				}
-			}
-		}
+	// If a gas multiplier is provided and wellformed, then increment it.
+	// This is useful if the add liquidity tx is already confirmed as we are not frontrunning per-se
+	// On a real frontrunning operation this is counter-productive as we would always fail because we frontrun the
+	// liquidity addition itself.
+	gas := tx.GasPrice()
+	if u.gasMultiplier != nil && u.gasMultiplier.Cmp(minGasMultiplier) > 0 {
+		ig := new(big.Float).SetInt(gas)
+		_, _ = ig.Mul(ig, u.gasMultiplier).Int(gas)
 	}
-	return nil
-}
-
-// AddETH checks when the tx is of addLiquidityETH in an UniswapV2 AMM fork.
-// If all our checks regarding the snipe passes (eg. the devs adding a minimum liquidity that we expect)
-// then we invoke the snipe
-// TODO Super similars, refactor?
-func (u *UniswapLiquidity) AddETH(ctx context.Context, tx *types.Transaction) error {
-	// parse the info of the swap so that we can access it easily
-	sender, err := u.getTxSenderAddressQuick(tx)
-	if err != nil {
-		return fmt.Errorf("error getting sender address: %s", err)
-	}
-
-	addLiquidity := u.newETHInputFromTx(tx)
-
-	tknBalanceSender, err := u.sniperTTBTkn.BalanceOf(nil, sender)
-	if err != nil {
-		return fmt.Errorf("error getting balance of token to buy: %s", err)
-	}
-
-	checkBalanceLP := addLiquidity.AmountTokenMin.Cmp(tknBalanceSender)
-
-	// security checks:
-	// does the liquidity addition deals with the token i'm targetting?
-	if addLiquidity.TokenAddress == u.sniperTTBAddr {
-		// we check if the liquidity provider really possess the liquidity he wants to add, because it is possible to be lured by other bots that fake liquidity addition.
-		if checkBalanceLP == 0 || checkBalanceLP == -1 {
-			// we check if the liquidity provider add enough collateral (WBNB or BUSD) as expected by our configuration. Bc sometimes the dev fuck the pleb and add way less liquidity that was advertised on telegram.
-			if tx.Value().Cmp(u.sniperMinLiq) == 1 {
-				if addLiquidity.AmountETHMin.Cmp(u.sniperMinLiq) == 1 {
-					log.Info(fmt.Sprintf("snipe executed for tx: %s", tx.Hash().String()))
-					return u.sniperClient.Snipe(ctx, tx.GasPrice())
-				}
-			} else {
-				log.Info(fmt.Sprintf(
-					"liquidity added but lower than expected: %.4f vs %.4f expected",
-					formatETHWeiToEther(tx.Value()),
-					formatETHWeiToEther(u.sniperMinLiq),
-				))
-			}
-		}
-	}
-	return nil
+	return gas
 }
 
 func formatETHWeiToEther(etherAmount *big.Int) float64 {

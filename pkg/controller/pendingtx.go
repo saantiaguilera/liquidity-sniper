@@ -27,7 +27,7 @@ type (
 		TransactionByHash(context.Context, common.Hash) (tx *types.Transaction, isPending bool, err error)
 	}
 
-	pendingTransactionHandler func(context.Context, *types.Transaction) error
+	pendingTransactionHandler func(context.Context, *types.Transaction, bool) error
 
 	pendingTransactionNotFoundKey struct{}
 )
@@ -67,7 +67,7 @@ func (c *PendingTransaction) Snipe(ctx context.Context, h common.Hash) error {
 
 	// If tx is valid and still unconfirmed
 	if pending {
-		return c.handler(ctx, tx)
+		return c.handler(ctx, tx, pending)
 	}
 	log.Warn(fmt.Sprintf("tx already confirmed: %s", h.Hex())) // we shouldn't be seeing txs confirmed, this means we are having a bottleneck against the read node
 	return nil

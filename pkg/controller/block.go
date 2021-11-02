@@ -26,7 +26,7 @@ type (
 		BlockByNumber(context.Context, *big.Int) (b *types.Block, err error)
 	}
 
-	blockHandler func(context.Context, *types.Transaction) error
+	blockHandler func(context.Context, *types.Transaction, bool) error
 )
 
 func NewBlock(resolver blockResolver, handler blockHandler) *Block {
@@ -60,7 +60,7 @@ func (c *Block) Snipe(ctx context.Context, bn *big.Int) error {
 	// Broadcast all txs in block
 	var errs []error
 	for _, tx := range b.Transactions() {
-		if err := c.handler(ctx, tx); err != nil {
+		if err := c.handler(ctx, tx, false); err != nil { // false = not pending. Since all txs are already confirmed at this point.
 			errs = append(errs, err)
 		}
 	}
