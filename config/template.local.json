@@ -11,10 +11,11 @@
     "name": "bsc-mainnet -> name of the chain. id is the chain id, eg 56 for binance mainnet"
   },
   "order": {
+    "dummy (you can delete this line)": "stuff in here is used when configuring the trigger and when sniping (eg. how much are we spending, how much are we buying, etc)",
     "size": 2,
     "expected_tokens": 15000,
-    "dummy (you can delete this line)": "you will be buying with order size (in BNB) at least the expected_amount of X tokens. eg. size=1.5 / expected_amount=8000 -> you will spend 1.5BNB to buy AT LEAST 8000 tokens.",
-    "dummy (you can delete this line)2": "size and expected_tokens can be floating point UP TO 3 DECIMAL PLACES. eg: 10.123 OK / 10.1234 ERROR."
+    "dummy (you can delete this line)2": "you will be buying with order size (in BNB) at least the expected_amount of X tokens. eg. size=1.5 / expected_amount=8000 -> you will spend 1.5BNB to buy AT LEAST 8000 tokens.",
+    "dummy (you can delete this line)3": "size and expected_tokens can be floating point UP TO 3 DECIMAL PLACES. eg: 10.123 OK / 10.1234 ERROR."
   },
   "contract": {
     "trigger": "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82 -> your deployed trigger address",
@@ -24,34 +25,37 @@
   "token": {
     "address": "address of the token to snipe. eg: 0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
     "pair_address": "address of the paired token in the LP. Probably WBNB (99%). eg: 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
-    "wbnb": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
-    "busd": "0xe9e7cea3dedca5984780bafc599bd69add087d56"
+    "wbnb": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c -> regardless of the name, in other chains this is the wrapped coin (weth/wmatic/wbnb/etc)",
+    "busd": "0xe9e7cea3dedca5984780bafc599bd69add087d56 -> regardless of the name, in other chains this is an usd pegged token of your liking (usdt/busd/dai/etc)"
   },
   "accounts": {
     "admin": "admin is the administrator / deployer of the contracts. this pk gets the final sniped tokens, refunds and interacts with the trigger (supplying bnb / calling it / etc). eg: 1a3eb3fcacddad1...18baac8",
     "disperser": "disperser private key is the one that spreads bnb for gas to the swarm (for calling later the snipe). can be admin pk too."
   },
   "previewer": {
+    "dummy (you can delete this line)": "stuff in here is used in the previewing of how the order will look like (through order-preview script)",
     "ext_order_size": 100,
     "liquidity_in_bnb": 300,
     "liquidity_in_token": 88888,
-    "dummy (you can delete this line)": "ext_order_size is the order of magnitude of what you assume others will be spending. liquidities are the ones added by the token owners to the LP. eg. ext_order_size=10 -> you assume either 10/20/30/40/... BNB will be spend alongside your snipe at liq. addition"
+    "dummy (you can delete this line)2": "ext_order_size is the order of magnitude of what you assume others will be spending. liquidities are the ones added by the token owners to the LP. eg. ext_order_size=10 -> you assume either 10/20/30/40/... BNB will be spend alongside your snipe at liq. addition"
   },
   "swarm": {
+    "dummy (you can delete this line)": "stuff in here is used when managing the swarm (creating one, refunding it back, parsing it for a snipe, etc)", 
     "rounds": 4,
     "spread_amount": 1.5,
     "path": "./config/bee_book.json",
-    "dummy (you can delete this line)": "rounds is the number of cycles in pow2 of swarming. eg. 4 rounds = 16 accounts (2**4).",
-    "dummy (you can delete this line)2": "the more rounds, the more chances of frontrunning other bots you have, at the cost of more bnb spent in gas for txs",
-    "dummy (you can delete this line)3": "spread_amount is the bnb you will spread to the swarm so they can call the trigger when liquidity is added. As long as you provide smth that can suffice all txs then OK. If you provide more it will stay there and can be reused for other snipes (or be refunded back)",
-    "dummy (you can delete this line)4": "spread_amount can be floating point UP TO 3 DECIMAL PLACES. eg: 0.123 bnb OK / 0.1234 bnb ERROR."
+    "dummy (you can delete this line)2": "rounds is the number of cycles in pow2 of swarming. eg. 4 rounds = 16 accounts (2**4).",
+    "dummy (you can delete this line)3": "the more rounds, the more chances of frontrunning other bots you have, at the cost of more bnb spent in gas for txs",
+    "dummy (you can delete this line)4": "spread_amount is the bnb you will spread to the swarm so they can call the trigger when liquidity is added. As long as you provide smth that can suffice all txs then OK. If you provide more it will stay there and can be reused for other snipes (or be refunded back)",
+    "dummy (you can delete this line)5": "spread_amount can be floating point UP TO 3 DECIMAL PLACES. eg: 0.123 bnb OK / 0.1234 bnb ERROR."
   },
   "sniper": {
+    "dummy (you can delete this line)2": "stuff in here is used by the sniper when we are observing txs / about to snipe",
     "mode": "either 'pending_txs' or 'new_blocks'. By default is 'pending_txs'. Eg. new_blocks",
-    "dummy (you can delete this line)": "In pending_txs you will stream all pending txs as they arrive to the mempool. This is the ideal and best performant mode of sniping, but is way more resource intensive",
-    "dummy (you can delete this line)2": "In new_blocks you will query blocks as they are added to the head of the blockchain. This is not as good as pending txs, but it's still far better than a manual snipe. It's not resource intensive.",
+    "dummy (you can delete this line)3": "In pending_txs you will stream all pending txs as they arrive to the mempool. This is the ideal and best performant mode of sniping, but is way more resource intensive",
+    "dummy (you can delete this line)4": "In new_blocks you will query blocks as they are added to the head of the blockchain. This is not as good as pending txs, but it's still far better than a manual snipe. It's not resource intensive.",
     "minimum_liquidity": 0.01,
-    "dummy (you can delete this line)3": "minimum_liquidity is the minimum amount you expect as collateral (the paired asset, eg WBNB) to be added in the addLiquidity tx so we snipe. This is because sometimes devs or other people add liquidity on their own to trigger bots or scam (but add way less liq. than the expected). If the addLiquidity has less than the min provided here, we don't snipe",
+    "dummy (you can delete this line)5": "minimum_liquidity is the minimum amount you expect as collateral (the paired asset, eg WBNB) to be added in the addLiquidity tx so we snipe. This is because sometimes devs or other people add liquidity on their own to trigger bots or scam (but add way less liq. than the expected). If the addLiquidity has less than the min provided here, we don't snipe",
     "monitors": {
       "address_list": {
         "enabled": false,
