@@ -50,12 +50,12 @@
     "dummy (you can delete this line)5": "spread_amount can be floating point UP TO 3 DECIMAL PLACES. eg: 0.123 bnb OK / 0.1234 bnb ERROR."
   },
   "sniper": {
-    "dummy (you can delete this line)2": "stuff in here is used by the sniper when we are observing txs / about to snipe",
+    "dummy (you can delete this line)": "stuff in here is used by the sniper when we are observing txs / about to snipe",
     "mode": "either 'pending_txs' or 'new_blocks'. By default is 'pending_txs'. Eg. new_blocks",
-    "dummy (you can delete this line)3": "In pending_txs you will stream all pending txs as they arrive to the mempool. This is the ideal and best performant mode of sniping, but is way more resource intensive",
-    "dummy (you can delete this line)4": "In new_blocks you will query blocks as they are added to the head of the blockchain. This is not as good as pending txs, but it's still far better than a manual snipe. It's not resource intensive.",
+    "dummy (you can delete this line)2": "In pending_txs you will stream all pending txs as they arrive to the mempool. This is the ideal and best performant mode of sniping, but is way more resource intensive",
+    "dummy (you can delete this line)3": "In new_blocks you will query blocks as they are added to the head of the blockchain. This is not as good as pending txs, but it's still far better than a manual snipe. It's not resource intensive.",
     "minimum_liquidity": 0.01,
-    "dummy (you can delete this line)5": "minimum_liquidity is the minimum amount you expect as collateral (the paired asset, eg WBNB) to be added in the addLiquidity tx so we snipe. This is because sometimes devs or other people add liquidity on their own to trigger bots or scam (but add way less liq. than the expected). If the addLiquidity has less than the min provided here, we don't snipe",
+    "dummy (you can delete this line)4": "minimum_liquidity is the minimum amount you expect as collateral (the paired asset, eg WBNB) to be added in the addLiquidity tx so we snipe. This is because sometimes devs or other people add liquidity on their own to trigger bots or scam (but add way less liq. than the expected). If the addLiquidity has less than the min provided here, we don't snipe",
     "monitors": {
       "address_list": {
         "enabled": false,
