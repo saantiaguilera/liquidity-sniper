@@ -20,7 +20,10 @@
   "contract": {
     "trigger": "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82 -> your deployed trigger address",
     "factory": "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73 -> AMM factory address in the provided chain",
-    "router": "0x10ED43C718714eb63d5aA57B78B54704E256024E -> AMM router address in the provided chain"
+    "router": "0x10ED43C718714eb63d5aA57B78B54704E256024E -> AMM router address in the provided chain",
+    "factory_creation_code": "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f -> AMM factory creationCode hash in the provided chain through CREATE2.",
+    "dummy (you can delete this line)": "the creation code can sometimes be obtained through a constant in the factory INIT_CODE_PAIR_HASH. If the AMM's factory has it, get it from there.",
+    "dummy (you can delete this line)2": "if it doesn't you will have to look it up in their source code (usually found in the UniSwapV2Library/PancakeLibrary/etc when creating a pair) or in the worst case scenario, compile a contract that gets it using the build artifacts from the deployed factory contracts eg. type(TheAmmPairContract).creationCode"
   },
   "token": {
     "address": "address of the token to snipe. eg: 0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",

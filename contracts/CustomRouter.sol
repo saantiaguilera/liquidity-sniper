@@ -7,10 +7,6 @@ import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 import "./TransferHelper.sol";
 import "./uniswap/UniSwapV2Library.sol";
 
-interface IUniSwapV2Factory {
-    function INIT_CODE_PAIR_HASH() external view returns(bytes32);
-}
-
 contract CustomRouter is Ownable {
 
     using SafeMath for uint;
@@ -20,11 +16,10 @@ contract CustomRouter is Ownable {
 
     bytes32 private creationCode;
 
-    constructor(address _factory, address _wbnb) public {
+    constructor(address _factory, address _wbnb, string memory _creationCode) public {
         factory = _factory;
         wbnb = _wbnb;
-
-        creationCode = IUniSwapV2Factory(_factory).INIT_CODE_PAIR_HASH();
+        creationCode = parseCreationCode(_creationCode);
     }
 
     modifier ensure(uint deadline) {
@@ -36,9 +31,9 @@ contract CustomRouter is Ownable {
         assert(msg.sender == wbnb); // only accept BNB via fallback from the wbnb contract
     }
 
-    function setFactoryAddress(address _factory) external onlyOwner returns(bool success) {
+    function setFactoryAddress(address _factory, string calldata _creationCode) external onlyOwner returns(bool success) {
         factory = _factory;
-        creationCode = IUniSwapV2Factory(_factory).INIT_CODE_PAIR_HASH(); // creationCode changes too.
+        creationCode = parseCreationCode(_creationCode); // creationCode changes too.
         return true;
     }
 
@@ -57,6 +52,17 @@ contract CustomRouter is Ownable {
 
     function getCreationCode() external view onlyOwner returns(bytes32) {
         return creationCode;
+    }
+
+    function parseCreationCode(string memory _creationCode) public pure returns (bytes32 result) {
+        bytes memory tmp = bytes(_creationCode);
+        if (tmp.length == 0) {
+            return 0x0;
+        }
+
+        assembly {
+            result := mload(add(_creationCode, 32))
+        }
     }
 
     function swapExactTokensForTokens(

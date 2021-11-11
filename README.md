@@ -26,7 +26,7 @@ The bot is divided in 2 sections:
 
 1. Create a `config/local.json` file following the template and samples provided inside the directory (`config/*.local.json`). This will be used by our scripts in the configuration and sniping phase. (you won't have yet the trigger address, this comes later)
 
-2. Deploy all contracts using the truffle migrations (create an `.env` file with `BINANCE_MAINNET_WALLET_PRIVATE_KEY` or `BINANCE_MAINNET_WALLET_MNEMONIC`). Contract deployment uses variables provided in `config/local.json` (eg. the factory one) so make sure to have it properly configured beforehand. Running them should configure:
+2. Deploy all contracts using the truffle migrations (create an `.env` file with `BINANCE_MAINNET_WALLET_PRIVATE_KEY` or `BINANCE_MAINNET_WALLET_MNEMONIC`). Contract deployment uses variables provided in `config/local.json` (eg. the factory ones) so make sure to have it properly configured beforehand. Running them should configure:
     - The trigger custom router address with your CustomRouter
     - The trigger admin with the deployer wallet (this is important)
     - Trigger and Router addresses (factory, native wrapped coin, factory creationCode hash)
