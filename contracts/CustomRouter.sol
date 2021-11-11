@@ -54,7 +54,7 @@ contract CustomRouter is Ownable {
         return creationCode;
     }
 
-    function parseCreationCode(string memory _creationCode) public pure returns (bytes32 result) {
+    function parseCreationCode(string memory _creationCode) private pure returns (bytes32 result) {
         bytes memory tmp = bytes(_creationCode);
         if (tmp.length == 0) {
             return 0x0;
