@@ -16,10 +16,10 @@ contract CustomRouter is Ownable {
 
     bytes32 private creationCode;
 
-    constructor(address _factory, address _wbnb, string memory _creationCode) public {
+    constructor(address _factory, address _wbnb, bytes32 _creationCode) public {
         factory = _factory;
         wbnb = _wbnb;
-        creationCode = parseCreationCode(_creationCode);
+        creationCode = _creationCode;
     }
 
     modifier ensure(uint deadline) {
@@ -31,9 +31,9 @@ contract CustomRouter is Ownable {
         assert(msg.sender == wbnb); // only accept BNB via fallback from the wbnb contract
     }
 
-    function setFactoryAddress(address _factory, string calldata _creationCode) external onlyOwner returns(bool success) {
+    function setFactoryAddress(address _factory, bytes32 _creationCode) external onlyOwner returns(bool success) {
         factory = _factory;
-        creationCode = parseCreationCode(_creationCode); // creationCode changes too.
+        creationCode = _creationCode; // creationCode changes too.
         return true;
     }
 
@@ -52,17 +52,6 @@ contract CustomRouter is Ownable {
 
     function getCreationCode() external view onlyOwner returns(bytes32) {
         return creationCode;
-    }
-
-    function parseCreationCode(string memory _creationCode) private pure returns (bytes32 result) {
-        bytes memory tmp = bytes(_creationCode);
-        if (tmp.length == 0) {
-            return 0x0;
-        }
-
-        assembly {
-            result := mload(add(_creationCode, 32))
-        }
     }
 
     function swapExactTokensForTokens(

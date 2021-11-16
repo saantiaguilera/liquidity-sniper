@@ -247,6 +247,7 @@ func (c *Sniper) checkTxStatus(ctx context.Context, txHash common.Hash) txRes {
 }
 
 func (c *Sniper) execute(ctx context.Context, bee *Bee, gasPrice *big.Int) common.Hash {
+	log.Debug(fmt.Sprintf("gas price using: %s", gasPrice.String()))
 	nonce := bee.PendingNonce
 	// create the tx
 	txBee := types.NewTransaction(nonce, c.sniperTriggerAddr, txValue, txGasLimit, gasPrice, triggerSmartContract)
