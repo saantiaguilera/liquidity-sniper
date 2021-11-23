@@ -252,7 +252,7 @@ func (c *Sniper) execute(ctx context.Context, bee *Bee, gasPrice *big.Int) commo
 	// create the tx
 	txBee := types.NewTransaction(nonce, c.sniperTriggerAddr, txValue, txGasLimit, gasPrice, triggerSmartContract)
 	// sign the tx
-	signedTxBee, err := types.SignTx(txBee, types.NewEIP155Signer(c.sniperChainID), bee.RawPK)
+	signedTxBee, err := types.SignTx(txBee, types.LatestSignerForChainID(c.sniperChainID), bee.RawPK)
 	if err != nil {
 		log.Error(fmt.Sprintf("sendBee: problem with signedTxBee: %s", err))
 		return common.HexToHash(nullHash)

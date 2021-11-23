@@ -237,7 +237,7 @@ func (u *UniswapLiquidity) newETHInputFromTx(tx *types.Transaction) uniswapAddLi
 }
 
 func (u *UniswapLiquidity) getTxSenderAddressQuick(tx *types.Transaction) (common.Address, error) {
-	msg, err := tx.AsMessage(types.NewEIP155Signer(u.sniperChainID), nil)
+	msg, err := tx.AsMessage(types.LatestSignerForChainID(u.sniperChainID), nil)
 	if err != nil {
 		return common.Address{}, err
 	}

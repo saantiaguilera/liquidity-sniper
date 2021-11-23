@@ -35,7 +35,7 @@ func NewAddressMonitor(sn domain.Sniper, addrs ...domain.NamedAddress) *AddressM
 }
 
 func (m *AddressMonitor) Monitor(ctx context.Context, tx *types.Transaction) {
-	msg, err := tx.AsMessage(types.NewEIP155Signer(m.sniperChainID), nil)
+	msg, err := tx.AsMessage(types.LatestSignerForChainID(m.sniperChainID), nil)
 	if err != nil {
 		log.Error(fmt.Sprintf("error getting tx as message %s: %s", tx.Hash().String(), err.Error()))
 		return
